@@ -4,3 +4,6 @@ numpy
 flask
 gunicorn
 waitress
+psycopg2-binary
+firebase-admin
+SQLAlchemy

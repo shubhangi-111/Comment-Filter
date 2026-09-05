@@ -173,12 +173,3 @@ def predict_comment_detail(comment):
         "confidence": round(confidence, 4),
         "threat_detected": False
     }
-
-def predict_comment(comment):
-    res = predict_comment_detail(comment)
-    return res["label"]
-
-def predict_batch(comments):
-    if not comments or not isinstance(comments, list):
-        return []
-    return [predict_comment_detail(c) for c in comments]
