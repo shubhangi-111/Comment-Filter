@@ -1,6 +1,12 @@
 import re
 import string
 
+# Pre-compile regex patterns for maximum CPU throughput under load
+URL_PATTERN = re.compile(r'http\S+|www\S+|https\S+')
+HTML_PATTERN = re.compile(r'<.*?>')
+SPACES_PATTERN = re.compile(r'\s+')
+PUNCT_TABLE = str.maketrans('', '', string.punctuation)
+
 def clean_text(text):
     """
     Cleans and preprocesses input comment text.
@@ -8,23 +14,21 @@ def clean_text(text):
     1. Lowercasing
     2. Remove URLs
     3. Remove HTML tags
-    4. Remove special characters & punctuation
-    5. Remove extra spaces
+    4. Remove punctuation
+    5. Remove extra whitespace
     """
+    if not isinstance(text, str):
+        return ""
 
-    # 1. Lowercase
     text = text.lower()
-
-    # 2. Remove URLs
-    text = re.sub(r'http\S+|www\S+|https\S+', '', text)
-
-    # 3. Remove HTML tags
-    text = re.sub(r'<.*?>', '', text)
-
-    # 4. Remove punctuation
-    text = text.translate(str.maketrans('', '', string.punctuation))
-
-    # . Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-
+    text = URL_PATTERN.sub('', text)
+    text = HTML_PATTERN.sub('', text)
+    text = text.translate(PUNCT_TABLE)
+    text = SPACES_PATTERN.sub(' ', text).strip()
     return text
+
+def clean_batch(texts):
+    """
+    Cleans a list of text comments efficiently.
+    """
+    return [clean_text(t) for t in texts]

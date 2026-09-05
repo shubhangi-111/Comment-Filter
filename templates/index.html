@@ -1,18 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Comment Filter</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommentModerator AI — Creator Welfare & Toxicity Protection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --accent-toxic: #ef4444;
+            --accent-clean: #10b981;
+            --accent-primary: #6366f1;
+            --accent-warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid var(--accent-primary);
+            color: #818cf8;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        textarea {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.85rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 110px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: #0f172a;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .status-pill {
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .status-pill.toxic {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-toxic);
+            border: 1px solid var(--accent-toxic);
+        }
+
+        .status-pill.clean {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-clean);
+            border: 1px solid var(--accent-clean);
+        }
+
+        .category-tag {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .threat-alert {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--accent-toxic);
+            border-radius: 6px;
+            color: #fca5a5;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .confidence-meter {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        .confidence-fill.toxic { background: var(--accent-toxic); }
+        .confidence-fill.clean { background: var(--accent-clean); }
+
+        .api-docs {
+            margin-top: 2rem;
+        }
+
+        .api-docs h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        pre {
+            background: #090d16;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            color: #38bdf8;
+            font-size: 0.85rem;
+        }
+    </style>
 </head>
 <body>
-    <h2>AI Comment Filter</h2>
+    <div class="container">
+        <div class="header">
+            <span class="badge">🛡️ Content Creator Welfare & Safety API v1.0</span>
+            <h1>CommentModerator AI</h1>
+            <p>Fast NLP & Multi-Lingual Harassment Shield for Content Creators & Online Communities</p>
+        </div>
 
-    <form method="POST">
-        <textarea name="comment" rows="5" cols="50" placeholder="Enter comment"></textarea><br><br>
-        <button type="submit">Analyze</button>
-    </form>
+        <div class="card">
+            <form method="POST" action="/">
+                <div class="form-group">
+                    <label for="comment">Live Comment & Threat Analysis Playground</label>
+                    <textarea name="comment" id="comment" placeholder="Test a comment (e.g., 'R-word', 'mar dunga', 'b!tch', or 'Awesome video!')...">{{ comment }}</textarea>
+                </div>
+                <button type="submit" class="btn">Analyze Toxicity & Threats</button>
+            </form>
 
-    {% if result %}
-        <h3>Result: {{ result }}</h3>
-    {% endif %}
+            {% if result %}
+                <div class="result-box">
+                    <div class="result-header">
+                        <span>Classification Result</span>
+                        <span class="status-pill {% if result.is_toxic %}toxic{% else %}clean{% endif %}">
+                            {{ result.label }}
+                        </span>
+                    </div>
+
+                    {% if result.category %}
+                        <div>
+                            <span class="category-tag">Category: {{ result.category }}</span>
+                        </div>
+                    {% endif %}
+
+                    {% if result.threat_detected %}
+                        <div class="threat-alert">
+                            ⚠️ <strong>THREAT ALERT:</strong> Severe violent threat / harassment detected! Recommended for auto-flagging.
+                        </div>
+                    {% endif %}
+
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">
+                        Confidence Score: <strong>{{ (result.confidence * 100) | round(1) }}%</strong>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-fill {% if result.is_toxic %}toxic{% else %}clean{% endif %}"
+                             style="width: {{ result.confidence * 100 }}%;"></div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="api-docs card">
+            <h3>⚡ Quick Creator API Integration</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Send single comments or batches via HTTP POST requests:
+            </p>
+            <pre><code># Single Comment Moderation
+curl -X POST http://localhost:5000/v1/moderate \
+  -H "Content-Type: application/json" \
+  -d '{"comment": "R-word"}'
+
+# Batch Comment Moderation
+curl -X POST http://localhost:5000/v1/moderate/batch \
+  -H "Content-Type: application/json" \
+  -d '{"comments": ["R-word", "mar dunga", "Awesome video!"]}'</code></pre>
+        </div>
+    </div>
 </body>
 </html>
