@@ -1,12 +1,28 @@
 // Creator Safety Shield AI - Content Script for YouTube & Instagram
 
-const API_SERVER = "http://localhost:5000/v1/moderate/batch";
+const DEFAULT_API_SERVER = "http://localhost:5000/v1/moderate/batch";
+
+async function getApiServer() {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['apiServer'], (result) => {
+        resolve(result.apiServer || DEFAULT_API_SERVER);
+      });
+    } else {
+      resolve(DEFAULT_API_SERVER);
+    }
+  });
+}
 
 async function getUserId() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['userId'], (result) => {
-      resolve(result.userId || "");
-    });
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['userId'], (result) => {
+        resolve(result.userId || "");
+      });
+    } else {
+      resolve("");
+    }
   });
 }
 
@@ -65,9 +81,10 @@ async function moderatePlatformComments() {
   };
 
   const userId = await getUserId();
+  const apiServer = await getApiServer();
 
   try {
-    const response = await fetch(API_SERVER, {
+    const response = await fetch(apiServer, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -107,6 +124,17 @@ async function moderatePlatformComments() {
   }
 }
 
-// Run moderation cycle every 2.5 seconds as user scrolls Reels/Videos
-setInterval(moderatePlatformComments, 2500);
+// Run moderation cycle using MutationObserver for better performance
+let timeoutId = null;
+const observer = new MutationObserver(() => {
+  if (timeoutId) clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
+    moderatePlatformComments();
+  }, 500); // debounce 500ms
+});
+
+observer.observe(document.body, { childList: true, subtree: true });
+
+// Initial run
+moderatePlatformComments();
 console.log("🛡️ Creator Safety Shield Extension Active!");

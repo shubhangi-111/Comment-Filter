@@ -292,6 +292,12 @@
                     </div>
 
                     <div id="evidence-content-box" class="overflow-x-auto">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs text-slate-400 font-medium">Recorded Offender Events (Neon DB)</span>
+                            <button onclick="clearVaultLogs()" class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 rounded-lg text-xs font-semibold transition-all">
+                                🗑️ Clear Vault Records
+                            </button>
+                        </div>
                         <table class="w-full text-left text-xs">
                             <thead>
                                 <tr class="border-b border-cardborder text-slate-400 uppercase tracking-wider">
@@ -693,9 +699,29 @@
             }
         }
 
-        // Razorpay Checkout
+        function clearVaultLogs() {
+            if (!confirm("Are you sure you want to clear all harassment evidence vault records?")) return;
+            fetch("/api/clear-logs", { method: "POST" })
+                .then(res => res.json())
+                .then(() => {
+                    alert("Vault cleared successfully!");
+                    window.location.reload();
+                })
+                .catch(() => alert("Failed to clear vault."));
+        }
+
+        // Razorpay Checkout & Verification
         function openRazorpayCheckout() {
-            fetch("/api/razorpay/create-order", { method: "POST" })
+            if (!currentUser) {
+                openAuthModal();
+                alert("🔑 Please sign in before upgrading to Creator Pro.");
+                return;
+            }
+            currentUser.getIdToken().then(token => {
+                fetch("/api/razorpay/create-order", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}`, "X-User-Id": currentUser.uid }
+                })
                 .then(res => res.json())
                 .then(data => {
                     const options = {
@@ -704,13 +730,32 @@
                         "currency": data.currency,
                         "name": "Creator Safety Shield",
                         "description": data.plan_name,
+                        "order_id": data.order_id,
                         "handler": function (response) {
-                            alert("Payment Successful! Subscription Active.");
+                            fetch("/api/razorpay/verify-payment", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${token}`,
+                                    "X-User-Id": currentUser.uid
+                                },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(verificationRes => {
+                                alert("🎉 " + verificationRes.message);
+                                window.location.reload();
+                            });
                         }
                     };
                     const rzp = new Razorpay(options);
                     rzp.open();
                 });
+            });
         }
 
         // Initial UI Update

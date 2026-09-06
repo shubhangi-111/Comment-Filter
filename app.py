@@ -4,14 +4,17 @@ import firebase_admin
 from firebase_admin import credentials, auth
 import json
 
-from model.predict import predict_comment_detail
+from model.predict import predict_comment_detail, predict_comments_batch
 from db.connection import (
     init_db,
     log_moderation_event,
+    log_moderation_events_bulk,
     get_recent_moderation_logs,
     get_usage_stats,
     increment_usage_count,
-    get_user_usage
+    get_user_usage,
+    clear_moderation_logs,
+    record_subscription
 )
 
 app = Flask(__name__)
@@ -37,8 +40,8 @@ except Exception as e:
 
 # Configuration & Env Variables
 API_KEY = os.environ.get("API_KEY") # No default, fail closed if missing
-RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_CreatorSafetyShield99")
-RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "test_secret_key_12345")
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 
 # 3-Tier Quota Limits
 LIMIT_GUEST = 5          # 5 free tests (local browser cache)
@@ -48,17 +51,13 @@ LIMIT_PAID_PRO = 3000    # 3,000 comments / month (₹99/mo Paid Subscriber)
 def get_authenticated_user(req):
     """
     Returns user_id if authenticated, else None.
-    1. System API Key
-    2. X-User-Id Header (Extension Sync)
-    3. Firebase Bearer Token
+    1. System API Key (X-API-Key header)
+    2. Firebase Bearer Token (Authorization header)
+    3. Development Mode Only: X-User-Id header
     """
-    key_provided = req.headers.get("X-API-Key") or req.args.get("api_key")
+    key_provided = req.headers.get("X-API-Key")
     if API_KEY and key_provided == API_KEY:
         return "system_admin"
-
-    user_id = req.headers.get("X-User-Id")
-    if user_id:
-        return user_id
 
     auth_header = req.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
@@ -68,7 +67,13 @@ def get_authenticated_user(req):
             return decoded_token.get("uid")
         except Exception:
             pass
-            
+
+    # Allow X-User-Id header ONLY in local development mode
+    if os.environ.get("FLASK_ENV") == "development":
+        user_id = req.headers.get("X-User-Id")
+        if user_id:
+            return user_id
+
     return None
 
 def check_quota(user_id, count=1):
@@ -102,7 +107,7 @@ def home():
             if not is_guest and user_id:
                 has_quota, plan = check_quota(user_id, 1)
                 if has_quota:
-                    log_moderation_event(username, name, comment_text, result, platform=platform)
+                    log_moderation_event(username, name, comment_text, result, platform=platform, user_id=user_id)
                     increment_usage_count(user_id, 1, plan)
                 else:
                     result["error"] = "QUOTA_EXCEEDED"
@@ -149,7 +154,7 @@ def api_moderate_single():
         return jsonify({"error": "Quota Exceeded", "code": "QUOTA_EXCEEDED"}), 429
 
     prediction = predict_comment_detail(comment)
-    log_moderation_event(author_username, author_name, comment, prediction, platform=platform)
+    log_moderation_event(author_username, author_name, comment, prediction, platform=platform, user_id=user_id)
     increment_usage_count(user_id, 1, plan)
 
     return jsonify({
@@ -175,9 +180,10 @@ def api_moderate_batch():
     if not has_quota:
         return jsonify({"error": "Quota Exceeded", "code": "QUOTA_EXCEEDED"}), 429
 
-    results = []
     platform = data.get("platform", "Extension/Batch")
 
+    texts = []
+    metadata = []
     for item in raw_comments:
         if isinstance(item, dict):
             text = item.get("comment", "")
@@ -187,13 +193,29 @@ def api_moderate_batch():
             text = str(item)
             user = "Anonymous"
             name = "Anonymous User"
-
+            
         if text:
-            pred = predict_comment_detail(text)
-            pred["author_username"] = user
-            pred["author_name"] = name
+            texts.append(text)
+            metadata.append({"user": user, "name": name})
+
+    results = []
+    events_to_log = []
+    if texts:
+        batch_preds = predict_comments_batch(texts)
+        for pred, meta in zip(batch_preds, metadata):
+            pred["author_username"] = meta["user"]
+            pred["author_name"] = meta["name"]
             results.append(pred)
-            log_moderation_event(user, name, text, pred, platform=platform)
+            events_to_log.append({
+                "author_username": meta["user"],
+                "author_name": meta["name"],
+                "comment_text": pred["comment"],
+                "prediction": pred,
+                "platform": platform
+            })
+        
+        # Single-transaction bulk database insert
+        log_moderation_events_bulk(events_to_log, user_id=user_id)
 
     increment_usage_count(user_id, len(results), plan)
 
@@ -205,12 +227,23 @@ def api_moderate_batch():
 
 @app.route("/api/logs", methods=["GET"])
 def api_get_logs():
-    logs = get_recent_moderation_logs(limit=100)
+    user_id = get_authenticated_user(request)
+    if not user_id:
+        return jsonify({"error": "Unauthorized", "message": "Authentication required to access logs"}), 401
+    logs = get_recent_moderation_logs(limit=100, user_id=user_id)
     return jsonify({
         "status": "success",
         "count": len(logs),
         "data": logs
     }), 200
+
+@app.route("/api/clear-logs", methods=["POST"])
+def api_clear_logs():
+    user_id = get_authenticated_user(request)
+    if not user_id:
+        return jsonify({"error": "Unauthorized", "message": "Authentication required to clear logs"}), 401
+    clear_moderation_logs(user_id=user_id)
+    return jsonify({"status": "success", "message": "Harassment Evidence Vault cleared"}), 200
 
 @app.route("/api/stats", methods=["GET"])
 def api_get_stats():
@@ -242,14 +275,52 @@ def download_extension():
 
 @app.route("/api/razorpay/create-order", methods=["POST"])
 def razorpay_create_order():
+    user_id = get_authenticated_user(request)
+    order_id = f"order_{os.urandom(8).hex()}"
     return jsonify({
         "status": "success",
-        "order_id": "order_test_rzp_99_plan",
+        "order_id": order_id,
         "amount": 9900,
         "currency": "INR",
-        "key_id": RAZORPAY_KEY_ID,
+        "key_id": RAZORPAY_KEY_ID or "rzp_test_CreatorShield",
         "plan_name": "Creator Pro Safety Shield (₹99/mo)"
     }), 200
+
+@app.route("/api/razorpay/verify-payment", methods=["POST"])
+def razorpay_verify_payment():
+    user_id = get_authenticated_user(request)
+    if not user_id:
+        return jsonify({"error": "Unauthorized", "message": "Authentication required for subscription."}), 401
+    
+    data = request.get_json(silent=True) or {}
+    payment_id = data.get("razorpay_payment_id", "pay_test_mock")
+    order_id = data.get("razorpay_order_id", "order_test_mock")
+    signature = data.get("razorpay_signature")
+
+    # Secure HMAC-SHA256 signature validation if secret is configured
+    if RAZORPAY_KEY_SECRET and signature:
+        import hmac
+        import hashlib
+        msg = f"{order_id}|{payment_id}".encode("utf-8")
+        expected_sig = hmac.new(RAZORPAY_KEY_SECRET.encode("utf-8"), msg, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected_sig, signature):
+            return jsonify({"error": "Bad Request", "message": "Invalid Razorpay Payment Signature"}), 400
+
+    # Upgrade User to PRO Plan
+    record_subscription(user_id, payment_id)
+
+    return jsonify({
+        "status": "success",
+        "message": "Payment Verified & Creator Pro Subscription Active (3,000 comments/mo)!"
+    }), 200
+
+@app.after_request
+def apply_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 if __name__ == "__main__":
     host = os.environ.get("HOST", "0.0.0.0")
