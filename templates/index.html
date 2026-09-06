@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creator Safety Shield — AI Harassment Prevention & Offender Evidence Vault</title>
+    <title>Creator Safety Shield — Comment Moderation & Evidence Vault</title>
     
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,20 +18,14 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81',
-                        },
-                        darkbg: '#0b0f19',
-                        cardbg: '#141c2e',
-                        cardborder: '#1e293b',
+                        zinc: {
+                            850: '#18181b',
+                            950: '#09090b',
+                        }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
             }
@@ -47,334 +41,442 @@
 
     <style>
         body {
-            background-color: #0b0f19;
-            color: #f8fafc;
+            background-color: #09090b;
+            color: #f4f4f5;
             font-family: 'Inter', sans-serif;
         }
-        .glow-effect {
-            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+        ::selection {
+            background: #27272a;
+            color: #fafafa;
         }
-        .glow-red {
-            box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.3);
+        input, textarea, button {
+            font-family: inherit;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-darkbg text-slate-100 antialiased selection:bg-brand-500 selection:text-white">
+<body class="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 antialiased selection:bg-zinc-800 selection:text-white">
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-50 backdrop-blur-md bg-darkbg/80 border-b border-cardborder">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
             <!-- Brand Logo -->
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/20">
-                    🛡️
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('home')">
+                <div class="w-7 h-7 rounded bg-zinc-100 text-zinc-950 font-bold flex items-center justify-center text-xs tracking-tighter">
+                    CS
                 </div>
-                <div>
-                    <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">Creator Safety Shield</span>
-                    <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">AI Moderation</span>
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-sm tracking-tight text-zinc-100">Safety Shield</span>
+                    <span class="px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 border border-zinc-800 rounded bg-zinc-900">SaaS v1.0</span>
                 </div>
             </div>
+
+            <!-- Main SaaS Nav Links -->
+            <nav class="hidden md:flex items-center space-x-6 text-xs font-mono">
+                <button id="nav-link-home" onclick="navigateTo('home')" class="py-1 border-b-2 border-zinc-100 text-zinc-100 transition-colors">
+                    Home
+                </button>
+                <button id="nav-link-tester" onclick="navigateTo('tester')" class="py-1 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors">
+                    Tester
+                </button>
+                <button id="nav-link-vault" onclick="navigateTo('vault')" class="py-1 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors">
+                    Evidence Vault
+                </button>
+                <button id="nav-link-extension" onclick="navigateTo('extension')" class="py-1 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors flex items-center space-x-1">
+                    <span id="nav-ext-lock-icon" class="text-[10px]">🔒</span>
+                    <span>Extension</span>
+                </button>
+                <button id="nav-link-pricing" onclick="navigateTo('pricing')" class="py-1 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors">
+                    Pricing
+                </button>
+            </nav>
 
             <!-- Navigation Actions -->
             <div class="flex items-center space-x-3">
                 <!-- User Profile Display (Shown when signed in) -->
-                <div id="nav-user-profile" class="hidden items-center space-x-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-medium">
-                    <div id="nav-user-avatar" class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">U</div>
-                    <span id="nav-user-name" class="text-slate-200 truncate max-w-[120px]">Creator</span>
+                <div id="nav-user-profile" class="hidden items-center space-x-2 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded text-xs">
+                    <div id="nav-user-avatar" class="w-4 h-4 rounded bg-zinc-200 text-zinc-950 flex items-center justify-center text-[10px] font-bold">U</div>
+                    <span id="nav-user-name" class="text-zinc-300 font-mono text-[11px] truncate max-w-[120px]">Creator</span>
                 </div>
 
                 <!-- Sign In Button -->
-                <button id="nav-signin-btn" onclick="openAuthModal()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-200 hover:text-white bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700 rounded-lg transition-all">
+                <button id="nav-signin-btn" onclick="openAuthModal()" class="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded transition-colors">
                     Sign In
                 </button>
 
                 <!-- Sign Out Button (Hidden by default) -->
-                <button id="nav-signout-btn" onclick="firebaseLogout()" class="hidden px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 bg-slate-800/40 hover:bg-slate-700/40 border border-slate-700/60 rounded-lg transition-all">
+                <button id="nav-signout-btn" onclick="firebaseLogout()" class="hidden px-2.5 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 border border-zinc-800 hover:border-zinc-700 rounded transition-colors">
                     Sign Out
                 </button>
 
-                <!-- Extension Download CTA (Locked for guests) -->
-                <button id="nav-ext-btn" onclick="handleExtensionDownload()" class="flex items-center space-x-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-lg shadow-md shadow-purple-500/20 transition-all transform hover:-translate-y-0.5">
-                    <span id="nav-ext-lock-icon">🔒</span>
-                    <span>Download Extension</span>
-                </button>
-
-                <!-- Upgrade CTA -->
-                <button onclick="openRazorpayCheckout()" class="hidden sm:flex items-center space-x-1 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-lg shadow-md shadow-brand-500/20 transition-all transform hover:-translate-y-0.5">
-                    <span>⚡ Pro (₹99)</span>
+                <!-- Extension Download CTA Header Shortcut -->
+                <button id="nav-ext-btn" onclick="handleNavExtensionClick()" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-zinc-950 bg-zinc-100 hover:bg-white rounded transition-colors">
+                    <span>Get Extension</span>
                 </button>
             </div>
+        </div>
+
+        <!-- Mobile Sub-nav -->
+        <div class="md:hidden flex items-center justify-around border-t border-zinc-900 bg-zinc-950 py-2 text-xs font-mono">
+            <button onclick="navigateTo('home')" class="text-zinc-400 hover:text-zinc-100">Home</button>
+            <button onclick="navigateTo('tester')" class="text-zinc-400 hover:text-zinc-100">Tester</button>
+            <button onclick="navigateTo('vault')" class="text-zinc-400 hover:text-zinc-100">Vault</button>
+            <button onclick="navigateTo('extension')" class="text-zinc-400 hover:text-zinc-100">Extension</button>
+            <button onclick="navigateTo('pricing')" class="text-zinc-400 hover:text-zinc-100">Pricing</button>
         </div>
     </header>
 
     <!-- MAIN CONTENT WRAPPER -->
     <main class="flex-grow">
         
-        <!-- HERO SECTION -->
-        <section class="relative pt-12 pb-16 overflow-hidden border-b border-cardborder/60">
-            <div class="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-transparent to-transparent pointer-events-none"></div>
-            
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300 mb-6">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>AI-Powered Harassment Prevention & Offender Evidence System</span>
+        <!-- PAGE 1: HOME VIEW -->
+        <section id="view-home" class="py-14 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded border border-zinc-800 bg-zinc-900/60 text-xs font-mono text-zinc-400 mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                    <span>Automated Moderation & Evidence Collection</span>
                 </div>
 
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
-                    Shield Your Brand & Mind From <br class="hidden sm:block"/>
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-indigo-300 to-purple-400">Online Harassment & Hate Speech</span>
+                <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-100 mb-4 leading-tight">
+                    Moderate comments.<br/>
+                    Archive offender evidence.
                 </h1>
 
-                <p class="max-w-2xl mx-auto text-slate-400 text-sm sm:text-base mb-8 leading-relaxed">
-                    Filter cyberbullying, slurs, and threats in real time across YouTube & Instagram. Store offender evidence securely in Neon DB for legal documentation.
+                <p class="max-w-xl mx-auto text-zinc-400 text-sm leading-relaxed mb-8">
+                    Detect toxic comments in real time on YouTube and Instagram. Store offender handles, timestamps, and evidence records securely in PostgreSQL.
                 </p>
 
-                <!-- Action CTA Group -->
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                    <a href="#playground-section" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2">
-                        <span>🧪 Try Live Comment Tester</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </a>
-                    <button onclick="openAuthModal()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center space-x-2">
-                        <span>🔑 Sign In / Register</span>
-                        <span class="text-xs bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full border border-brand-500/30">Unlock Extension</span>
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
+                    <button onclick="navigateTo('tester')" class="w-full sm:w-auto px-6 py-2.5 rounded bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs transition-colors flex items-center justify-center space-x-2">
+                        <span>Launch Comment Tester</span>
+                        <span>→</span>
+                    </button>
+                    <button onclick="handleNavExtensionClick()" class="w-full sm:w-auto px-6 py-2.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-medium text-xs transition-colors flex items-center justify-center space-x-2">
+                        <span>Download Extension</span>
                     </button>
                 </div>
+            </div>
 
-                <!-- Feature Badges -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
-                    <div class="p-5 rounded-2xl bg-cardbg border border-cardborder hover:border-slate-700 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 text-lg">⚡</div>
-                        <h3 class="font-semibold text-white text-sm mb-1">Real-Time Toxicity Analysis</h3>
-                        <p class="text-xs text-slate-400 leading-normal">Detect severe toxicity, slurs, harassment, and hate speech using fine-tuned ML models.</p>
+            <!-- Feature Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
+                <div class="p-5 rounded border border-zinc-800 bg-zinc-900/30">
+                    <div class="text-xs font-mono text-zinc-500 mb-2">01 / CLASSIFICATION</div>
+                    <h3 class="font-medium text-zinc-100 text-sm mb-1.5">Toxicity & Threat Detection</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Fine-tuned machine learning model classifies severe toxicity, slurs, harassment, and explicit threats in real time.</p>
+                </div>
+                <div class="p-5 rounded border border-zinc-800 bg-zinc-900/30">
+                    <div class="text-xs font-mono text-zinc-500 mb-2">02 / BROWSER EXTENSION</div>
+                    <h3 class="font-medium text-zinc-100 text-sm mb-1.5">Live Social Filtering</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Chrome Extension automatically blurs and hides abusive comments on YouTube videos and Instagram Reels.</p>
+                </div>
+                <div class="p-5 rounded border border-zinc-800 bg-zinc-900/30">
+                    <div class="text-xs font-mono text-zinc-500 mb-2">03 / EVIDENCE VAULT</div>
+                    <h3 class="font-medium text-zinc-100 text-sm mb-1.5">Legal Documentation</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Automatically logs offender handles, comment content, and timestamps to PostgreSQL database tables for legal records.</p>
+                </div>
+            </div>
+
+            <!-- How It Works Section -->
+            <div class="border-t border-zinc-900 pt-10">
+                <h2 class="text-xs font-mono uppercase tracking-wider text-zinc-500 mb-6 text-center">System Workflow</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
+                    <div class="p-4 rounded border border-zinc-800/80 bg-zinc-950">
+                        <span class="text-zinc-500 block mb-1">STEP 01</span>
+                        <h4 class="text-zinc-200 font-semibold mb-1">Install Extension</h4>
+                        <p class="text-zinc-500">Sign in, download the unpacked extension zip, and connect your account User ID.</p>
                     </div>
-                    <div class="p-5 rounded-2xl bg-cardbg border border-cardborder hover:border-slate-700 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-3 text-lg">🧩</div>
-                        <h3 class="font-semibold text-white text-sm mb-1">Chrome Extension</h3>
-                        <p class="text-xs text-slate-400 leading-normal">Automatically blur & hide toxic comments live while browsing YouTube and Instagram Reels.</p>
+                    <div class="p-4 rounded border border-zinc-800/80 bg-zinc-950">
+                        <span class="text-zinc-500 block mb-1">STEP 02</span>
+                        <p class="text-zinc-200 font-semibold mb-1">Automated Analysis</p>
+                        <p class="text-zinc-500">Incoming comments are evaluated against rules and ML model endpoints.</p>
                     </div>
-                    <div class="p-5 rounded-2xl bg-cardbg border border-cardborder hover:border-slate-700 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-3 text-lg">⚖️</div>
-                        <h3 class="font-semibold text-white text-sm mb-1">Legal Evidence Vault</h3>
-                        <p class="text-xs text-slate-400 leading-normal">Store offender handles, timestamps, and comments on Neon DB for legal documentation.</p>
+                    <div class="p-4 rounded border border-zinc-800/80 bg-zinc-950">
+                        <span class="text-zinc-500 block mb-1">STEP 03</span>
+                        <h4 class="text-zinc-200 font-semibold mb-1">Vault Archiving</h4>
+                        <p class="text-zinc-500">Toxic events and harasser handles are stored securely in PostgreSQL for legal evidence.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- DASHBOARD / PLAYGROUND SECTION -->
-        <section id="playground-section" class="py-12 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            
+
+        <!-- PAGE 2: TESTER VIEW -->
+        <section id="view-tester" class="hidden py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-zinc-100">Live Comment Tester</h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Test individual comment strings against the moderation classifier.</p>
+            </div>
+
             <!-- Tier & Quota Banner -->
-            <div id="mode-banner" class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
-                <div class="flex items-center space-x-2 text-amber-300 font-medium">
-                    <span class="text-base">⚡</span>
-                    <span id="mode-badge-text">Guest Mode: <strong id="guest-count-disp">0</strong> / 5 Free Tests (Browser Cache)</span>
+            <div id="mode-banner" class="mb-5 p-3 rounded border border-zinc-800 bg-zinc-900/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                <div class="flex items-center space-x-2 text-zinc-400 font-mono">
+                    <span id="mode-badge-text">Guest Tier: <strong id="guest-count-disp" class="text-zinc-200">0</strong> / 5 Local Tests</span>
                 </div>
-                <button id="banner-signin-link" onclick="openAuthModal()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 rounded-lg font-semibold transition-all">
-                    Sign In for 50 Free Weekly Comments & Extension
+                <button id="banner-signin-link" onclick="openAuthModal()" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded text-[11px] font-medium transition-colors">
+                    Sign In for 50 Weekly Tests
                 </button>
             </div>
 
             <!-- Stats Bar -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div class="p-4 rounded-xl bg-cardbg border border-cardborder">
-                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1" id="quota-label-disp">Current Quota</div>
-                    <div class="text-xl font-bold text-white" id="quota-val-disp">{{ stats.processed_count }} / {{ limit_free }}</div>
-                    <div class="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                        <div id="quota-progress-fill" class="h-full bg-brand-500 transition-all duration-300" style="width: {{ (stats.processed_count / limit_free * 100) | round(1) }}%;"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <div class="p-3.5 rounded border border-zinc-800 bg-zinc-900/40">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1" id="quota-label-disp">Current Quota</div>
+                    <div class="text-lg font-mono font-semibold text-zinc-100" id="quota-val-disp">{{ stats.processed_count }} / {{ limit_free }}</div>
+                    <div class="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+                        <div id="quota-progress-fill" class="h-full bg-zinc-300 transition-all duration-300" style="width: {{ (stats.processed_count / limit_free * 100) | round(1) }}%;"></div>
                     </div>
                 </div>
-                <div class="p-4 rounded-xl bg-cardbg border border-cardborder">
-                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Evidence Records (Neon DB)</div>
-                    <div class="text-xl font-bold text-white" id="db-logs-count">{{ logs | length }} Records</div>
+                <div class="p-3.5 rounded border border-zinc-800 bg-zinc-900/40">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Evidence Records</div>
+                    <div class="text-lg font-mono font-semibold text-zinc-100" id="db-logs-count">{{ logs | length }} Records</div>
                 </div>
-                <div class="p-4 rounded-xl bg-cardbg border border-cardborder">
-                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Active Plan</div>
-                    <div class="text-xl font-bold text-indigo-400" id="plan-status-disp">Free Guest Tier</div>
+                <div class="p-3.5 rounded border border-zinc-800 bg-zinc-900/40">
+                    <div class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Account Status</div>
+                    <div class="text-lg font-mono font-semibold text-zinc-300" id="plan-status-disp">Guest Tier</div>
                 </div>
             </div>
 
             <!-- MAIN WORKSPACE CARD -->
-            <div class="rounded-2xl bg-cardbg border border-cardborder shadow-2xl p-6 sm:p-8">
+            <div class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-5 sm:p-6">
                 
-                <!-- Tabs -->
-                <div class="flex border-b border-cardborder mb-6 space-x-4">
-                    <button id="tab-btn-playground" onclick="switchTab('playground')" class="pb-3 text-sm font-semibold border-b-2 border-brand-500 text-brand-400 transition-all">
-                        🧪 Live Comment Tester
-                    </button>
-                    <button id="tab-btn-evidence" onclick="switchTab('evidence')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all">
-                        📑 Harassment Evidence Vault ({{ logs | length }})
+                <!-- Guest Lock Card -->
+                <div id="guest-limit-lock-box" class="hidden mb-6 p-5 rounded border border-zinc-800 bg-zinc-950 text-center">
+                    <h3 class="text-sm font-semibold text-zinc-200 mb-1">5 Test Limit Reached</h3>
+                    <p class="text-xs text-zinc-400 mb-4 max-w-sm mx-auto">
+                        Sign in with Google to unlock 50 weekly tests, database logging, and the Chrome Extension.
+                    </p>
+                    <button onclick="openAuthModal()" class="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition-colors">
+                        Sign In to Continue
                     </button>
                 </div>
 
-                <!-- TAB 1: PLAYGROUND -->
-                <div id="tab-playground">
-                    
-                    <!-- Guest Lock Card (Shown when 5 free tests used) -->
-                    <div id="guest-limit-lock-box" class="hidden mb-6 p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
-                        <div class="text-3xl mb-2">🔒</div>
-                        <h3 class="text-lg font-bold text-red-300 mb-1">5 Free Guest Tests Limit Reached</h3>
-                        <p class="text-xs sm:text-sm text-slate-400 mb-4 max-w-md mx-auto">
-                            You've used your 5 free guest tests. Sign in with Google to get <strong>50 Free Weekly Comments</strong>, save offender evidence to Neon DB, and unlock the Chrome Extension!
-                        </p>
-                        <button onclick="openAuthModal()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-lg shadow-brand-500/20 transition-all">
-                            🔑 Sign In for 50 Free Comments
-                        </button>
-                    </div>
-
-                    <!-- Comment Submission Form -->
-                    <form id="moderation-form" onsubmit="submitCommentForm(event)" class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Offender Username / Handle</label>
-                                <input type="text" name="username" id="username" value="@troll_user" placeholder="e.g. @troll_user123" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-brand-500 transition-all"/>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Author Name</label>
-                                <input type="text" name="name" id="name" value="Anonymous User" placeholder="e.g. Rahul Sharma" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-brand-500 transition-all"/>
-                            </div>
-                        </div>
-
+                <!-- Comment Submission Form -->
+                <form id="moderation-form" onsubmit="submitCommentForm(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Comment Text to Analyze</label>
-                            <textarea name="comment" id="comment" rows="3" placeholder="Test a comment (e.g., slurs, harassment, hate speech)..." class="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-brand-500 transition-all">{{ comment }}</textarea>
+                            <label class="block text-[11px] font-mono text-zinc-400 mb-1">Author Handle</label>
+                            <input type="text" name="username" id="username" value="@troll_user" placeholder="@username" class="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 font-mono transition-colors"/>
                         </div>
+                        <div>
+                            <label class="block text-[11px] font-mono text-zinc-400 mb-1">Author Display Name</label>
+                            <input type="text" name="name" id="name" value="Anonymous User" placeholder="Display Name" class="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"/>
+                        </div>
+                    </div>
 
-                        <button type="submit" id="submit-test-btn" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm rounded-lg transition-all shadow-md shadow-brand-500/20">
-                            Analyze Comment
-                        </button>
-                    </form>
+                    <div>
+                        <label class="block text-[11px] font-mono text-zinc-400 mb-1">Comment Text</label>
+                        <textarea name="comment" id="comment" rows="3" placeholder="Enter comment text to analyze for toxicity..." class="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors">{{ comment }}</textarea>
+                    </div>
 
-                    <!-- Live Result Output -->
-                    <div id="live-result-container" class="mt-6">
-                        {% if result %}
-                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs font-medium text-slate-400">Analysis Result</span>
-                                    <span class="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide {% if result.is_toxic %}bg-red-500/20 text-red-400 border border-red-500/40{% else %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/40{% endif %}">
-                                        {{ result.label }}
-                                    </span>
-                                </div>
-                                {% if result.category %}
-                                    <div>
-                                        <span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-medium">Category: {{ result.category }}</span>
-                                    </div>
-                                {% endif %}
-                                {% if result.threat_detected %}
-                                    <div class="p-3 rounded-lg bg-red-500/10 border border-red-500/40 text-xs text-red-300 font-medium">
-                                        ⚠️ <strong>THREAT ALERT:</strong> Violent threat detected! Archived for legal documentation.
-                                    </div>
-                                {% endif %}
-                                <div class="text-xs text-slate-400">
-                                    Confidence Score: <strong class="text-slate-200">{{ (result.confidence * 100) | round(1) }}%</strong>
-                                </div>
+                    <button type="submit" id="submit-test-btn" class="w-full py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded transition-colors">
+                        Analyze Text
+                    </button>
+                </form>
+
+                <!-- Live Result Output -->
+                <div id="live-result-container" class="mt-5">
+                    {% if result %}
+                        <div class="p-4 rounded border border-zinc-800 bg-zinc-950 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-mono text-zinc-400">Classification Result</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider {% if result.is_toxic %}bg-red-950/60 text-red-400 border border-red-800/50{% else %}bg-zinc-800 text-zinc-300 border border-zinc-700{% endif %}">
+                                    {{ result.label }}
+                                </span>
                             </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Local Guest Cache -->
-                    <div id="guest-cache-section" class="hidden mt-6">
-                        <h4 class="text-xs font-medium text-slate-400 mb-2">⚡ Recent Browser Cache Tests (Guest Mode - Not Saved to DB):</h4>
-                        <div id="guest-cache-list" class="space-y-2"></div>
-                    </div>
+                            {% if result.category %}
+                                <div class="text-[11px] font-mono text-zinc-400">
+                                    Category: <span class="text-zinc-200">{{ result.category }}</span>
+                                </div>
+                            {% endif %}
+                            {% if result.threat_detected %}
+                                <div class="p-2.5 rounded border border-red-900/60 bg-red-950/30 text-[11px] font-mono text-red-300">
+                                    Threat Alert: High-risk severe threat pattern detected. Archived to vault.
+                                </div>
+                            {% endif %}
+                            <div class="text-[11px] font-mono text-zinc-500">
+                                Model Confidence: <span class="text-zinc-300">{{ (result.confidence * 100) | round(1) }}%</span>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
 
-                <!-- TAB 2: EVIDENCE VAULT -->
-                <div id="tab-evidence" class="hidden">
-                    <div id="evidence-locked-msg" class="hidden p-6 rounded-xl bg-slate-900 border border-slate-800 text-center">
-                        <div class="text-3xl mb-2">🔒</div>
-                        <h3 class="text-base font-bold text-white mb-1">Evidence Vault Protected</h3>
-                        <p class="text-xs text-slate-400 mb-4">Sign in to view and download offender evidence records stored on Neon DB.</p>
-                        <button onclick="openAuthModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg transition-all">
-                            Sign In to Unlock Vault
-                        </button>
+                <!-- Local Guest Cache -->
+                <div id="guest-cache-section" class="hidden mt-5">
+                    <h4 class="text-[11px] font-mono text-zinc-500 mb-2">Recent Guest Session Tests:</h4>
+                    <div id="guest-cache-list" class="space-y-1.5"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PAGE 3: EVIDENCE VAULT VIEW -->
+        <section id="view-vault" class="hidden py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-zinc-100">Evidence Vault</h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Recorded offender harassment logs stored in PostgreSQL.</p>
+            </div>
+
+            <!-- Gated Lock Message for Guests -->
+            <div id="evidence-locked-msg" class="hidden p-8 rounded border border-zinc-800 bg-zinc-900/40 text-center">
+                <div class="w-10 h-10 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 flex items-center justify-center mx-auto mb-3 text-sm">🔒</div>
+                <h3 class="text-sm font-semibold text-zinc-200 mb-1">Evidence Vault Access Restricted</h3>
+                <p class="text-xs text-zinc-400 mb-5 max-w-xs mx-auto">Sign in to view offender evidence records and download legal documentation logs.</p>
+                <button onclick="openAuthModal()" class="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition-colors">
+                    Sign In to Unlock Vault
+                </button>
+            </div>
+
+            <!-- Unlocked Content Box -->
+            <div id="evidence-content-box" class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-5 overflow-x-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[11px] font-mono text-zinc-400">PostgreSQL Evidence Logs ({{ logs | length }})</span>
+                    <button onclick="clearVaultLogs()" class="px-2.5 py-1 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800 rounded text-[11px] font-mono transition-colors">
+                        Clear Records
+                    </button>
+                </div>
+                <table class="w-full text-left text-xs font-mono">
+                    <thead>
+                        <tr class="border-b border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-wider">
+                            <th class="py-2.5 px-2">Handle</th>
+                            <th class="py-2.5 px-2">Name</th>
+                            <th class="py-2.5 px-2">Comment</th>
+                            <th class="py-2.5 px-2">Status</th>
+                            <th class="py-2.5 px-2">Category</th>
+                            <th class="py-2.5 px-2">Platform</th>
+                            <th class="py-2.5 px-2">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body" class="divide-y divide-zinc-800/60 text-zinc-300 text-[11px]">
+                        {% if logs %}
+                            {% for log in logs %}
+                                <tr class="hover:bg-zinc-900/60">
+                                    <td class="py-2.5 px-2 text-zinc-200">{{ log.author_username }}</td>
+                                    <td class="py-2.5 px-2 text-zinc-400">{{ log.author_name }}</td>
+                                    <td class="py-2.5 px-2 max-w-[180px] truncate text-zinc-300">{{ log.comment_text }}</td>
+                                    <td class="py-2.5 px-2">
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] uppercase {% if log.is_toxic %}bg-red-950/60 text-red-400 border border-red-800/50{% else %}bg-zinc-800 text-zinc-400{% endif %}">
+                                            {{ log.label }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-2 text-zinc-400">{{ log.category }}</td>
+                                    <td class="py-2.5 px-2 text-zinc-500">{{ log.platform }}</td>
+                                    <td class="py-2.5 px-2 text-zinc-500 text-[10px]">{{ log.created_at }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-zinc-600">No evidence records stored yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- PAGE 4: CHROME EXTENSION VIEW (GATED WHEN GUEST) -->
+        <section id="view-extension" class="hidden py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-zinc-100">Chrome Extension Setup</h1>
+                <p class="text-xs text-zinc-400 mt-0.5">Filter comments live on YouTube videos and Instagram Reels.</p>
+            </div>
+
+            <!-- GATED STATE FOR GUEST USERS -->
+            <div id="ext-locked-card" class="hidden p-8 rounded border border-zinc-800 bg-zinc-900/40 text-center">
+                <div class="w-10 h-10 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 flex items-center justify-center mx-auto mb-3 text-sm">🔒</div>
+                <h3 class="text-sm font-semibold text-zinc-100 mb-1">Extension Download Locked</h3>
+                <p class="text-xs text-zinc-400 mb-5 max-w-sm mx-auto">
+                    The Chrome Extension requires user authentication to sync your moderation quota and evidence vault. Please sign in or register to download the extension package.
+                </p>
+                <button onclick="openAuthModal()" class="px-5 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium rounded transition-colors">
+                    Sign In to Unlock Extension (.zip)
+                </button>
+            </div>
+
+            <!-- UNLOCKED STATE FOR SIGNED-IN USERS -->
+            <div id="ext-unlocked-card" class="hidden space-y-6">
+                <div class="p-6 rounded border border-zinc-800 bg-zinc-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-zinc-100">Creator Safety Shield Extension (v1.0)</h3>
+                        <p class="text-xs text-zinc-400 mt-0.5">Manifest V3 extension for Chrome, Edge, and Brave browsers.</p>
                     </div>
 
-                    <div id="evidence-content-box" class="overflow-x-auto">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs text-slate-400 font-medium">Recorded Offender Events (Neon DB)</span>
-                            <button onclick="clearVaultLogs()" class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/40 rounded-lg text-xs font-semibold transition-all">
-                                🗑️ Clear Vault Records
-                            </button>
-                        </div>
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="border-b border-cardborder text-slate-400 uppercase tracking-wider">
-                                    <th class="py-3 px-2">Handle</th>
-                                    <th class="py-3 px-2">Name</th>
-                                    <th class="py-3 px-2">Comment</th>
-                                    <th class="py-3 px-2">Status</th>
-                                    <th class="py-3 px-2">Category</th>
-                                    <th class="py-3 px-2">Platform</th>
-                                    <th class="py-3 px-2">Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logs-table-body" class="divide-y divide-cardborder/50 text-slate-300">
-                                {% if logs %}
-                                    {% for log in logs %}
-                                        <tr class="hover:bg-slate-800/30">
-                                            <td class="py-2.5 px-2 font-medium text-indigo-400">{{ log.author_username }}</td>
-                                            <td class="py-2.5 px-2">{{ log.author_name }}</td>
-                                            <td class="py-2.5 px-2 max-w-[200px] truncate">{{ log.comment_text }}</td>
-                                            <td class="py-2.5 px-2">
-                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if log.is_toxic %}bg-red-500/20 text-red-400 border border-red-500/30{% else %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30{% endif %}">
-                                                    {{ log.label }}
-                                                </span>
-                                            </td>
-                                            <td class="py-2.5 px-2 text-amber-300">{{ log.category }}</td>
-                                            <td class="py-2.5 px-2 text-slate-400">{{ log.platform }}</td>
-                                            <td class="py-2.5 px-2 text-slate-500">{{ log.created_at }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="7" class="py-8 text-center text-slate-500">No harassment records stored yet.</td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
+                    <button id="section-ext-download-btn" onclick="handleExtensionDownload()" class="flex items-center justify-center space-x-2 px-5 py-2.5 rounded font-medium text-xs text-zinc-950 bg-zinc-100 hover:bg-white transition-colors">
+                        <span id="section-ext-lock-icon" class="text-[10px]">🔓</span>
+                        <span>Download Extension (.zip)</span>
+                    </button>
+                </div>
+
+                <!-- Installation Guide -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+                    <div class="p-4 rounded border border-zinc-800 bg-zinc-950">
+                        <div class="text-zinc-500 mb-1">STEP 01</div>
+                        <h4 class="text-zinc-200 font-semibold mb-1">Extract Package</h4>
+                        <p class="text-zinc-500 text-[11px]">Download the `.zip` archive and extract it to a directory on your computer.</p>
+                    </div>
+                    <div class="p-4 rounded border border-zinc-800 bg-zinc-950">
+                        <div class="text-zinc-500 mb-1">STEP 02</div>
+                        <h4 class="text-zinc-200 font-semibold mb-1">Load Unpacked</h4>
+                        <p class="text-zinc-500 text-[11px]">Open `chrome://extensions`, enable Developer Mode, and click "Load unpacked". Select the extracted folder.</p>
+                    </div>
+                    <div class="p-4 rounded border border-zinc-800 bg-zinc-950">
+                        <div class="text-zinc-500 mb-1">STEP 03</div>
+                        <h4 class="text-zinc-200 font-semibold mb-1">Connect User ID</h4>
+                        <p class="text-zinc-500 text-[11px]">Click the extension icon in your Chrome toolbar and paste your account User ID to sync your quota.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- EXTENSION DOWNLOAD & SETUP GUIDE SECTION -->
-        <section class="py-12 border-t border-cardborder max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="p-6 sm:p-8 rounded-2xl bg-cardbg border border-cardborder">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
-                            <span>🔌 Chrome Extension Setup</span>
-                        </h3>
-                        <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                            Moderate comments live while browsing YouTube and Instagram Reels.
-                        </p>
-                    </div>
 
-                    <!-- Locked / Unlocked Download Button -->
+        <!-- PAGE 5: PRICING VIEW -->
+        <section id="view-pricing" class="hidden py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 text-center">
+                <h1 class="text-xl font-bold text-zinc-100">Subscription Plans</h1>
+                <p class="text-xs text-zinc-400 mt-1">Simple, predictable pricing for creators and community managers.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <!-- Free Plan -->
+                <div class="p-6 rounded border border-zinc-800 bg-zinc-900/40 flex flex-col justify-between">
                     <div>
-                        <button id="section-ext-download-btn" onclick="handleExtensionDownload()" class="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-3 rounded-xl font-semibold text-xs sm:text-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/25 transition-all">
-                            <span id="section-ext-lock-icon">🔒</span>
-                            <span>Download Chrome Extension (.zip)</span>
-                        </button>
+                        <div class="text-xs font-mono text-zinc-500 mb-1">STARTER</div>
+                        <h3 class="text-lg font-bold text-zinc-100">Free Creator</h3>
+                        <div class="my-4">
+                            <span class="text-2xl font-bold font-mono text-zinc-100">₹0</span>
+                            <span class="text-xs text-zinc-500">/ forever</span>
+                        </div>
+                        <ul class="space-y-2 text-xs text-zinc-400 font-mono mb-6">
+                            <li class="flex items-center space-x-2"><span>✓</span><span>50 free Weekly Comments</span></li>
+                            <li class="flex items-center space-x-2"><span>✓</span><span>Chrome Extension Access</span></li>
+                            <li class="flex items-center space-x-2"><span>✓</span><span>Evidence Vault Archiving</span></li>
+                        </ul>
                     </div>
+                    <button onclick="openAuthModal()" class="w-full py-2 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 font-medium text-xs border border-zinc-800 rounded transition-colors">
+                        Get Started Free
+                    </button>
                 </div>
 
-                <!-- Installation Steps -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                        <div class="font-semibold text-indigo-400 mb-1">Step 1: Download & Extract</div>
-                        <p class="text-slate-400">Sign in to download the <code>.zip</code> package, then unzip it to a folder on your computer.</p>
+                <!-- Pro Plan -->
+                <div class="p-6 rounded border border-zinc-100/20 bg-zinc-900/80 flex flex-col justify-between relative">
+                    <span class="absolute -top-2.5 right-4 px-2 py-0.5 text-[9px] font-mono bg-zinc-100 text-zinc-950 rounded uppercase font-bold">Recommended</span>
+                    <div>
+                        <div class="text-xs font-mono text-zinc-400 mb-1">UNLIMITED PROTECTIONS</div>
+                        <h3 class="text-lg font-bold text-zinc-100">Creator Pro</h3>
+                        <div class="my-4">
+                            <span class="text-2xl font-bold font-mono text-zinc-100">₹{{ plan_price_inr }}</span>
+                            <span class="text-xs text-zinc-500">/ month</span>
+                        </div>
+                        <ul class="space-y-2 text-xs text-zinc-300 font-mono mb-6">
+                            <li class="flex items-center space-x-2"><span>✓</span><span>{{ limit_pro }} Comments / month</span></li>
+                            <li class="flex items-center space-x-2"><span>✓</span><span>Priority ML Inference</span></li>
+                            <li class="flex items-center space-x-2"><span>✓</span><span>Legal Evidence Archiving</span></li>
+                            <li class="flex items-center space-x-2"><span>✓</span><span>YouTube & Instagram Support</span></li>
+                        </ul>
                     </div>
-                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                        <div class="font-semibold text-indigo-400 mb-1">Step 2: Load Unpacked</div>
-                        <p class="text-slate-400">Open Chrome at <code>chrome://extensions</code>, enable <strong>Developer mode</strong>, and click <strong>Load unpacked</strong>.</p>
-                    </div>
-                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                        <div class="font-semibold text-indigo-400 mb-1">Step 3: Connect User ID</div>
-                        <p class="text-slate-400">Click the Extension icon in Chrome toolbar and paste your User ID to sync your quota.</p>
-                    </div>
+                    <button onclick="openRazorpayCheckout()" class="w-full py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded transition-colors">
+                        Upgrade to Pro (₹{{ plan_price_inr }})
+                    </button>
                 </div>
             </div>
         </section>
@@ -382,57 +484,57 @@
     </main>
 
     <!-- AUTH MODAL PAGE OVERLAY -->
-    <div id="auth-modal-overlay" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-cardbg border border-cardborder rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+    <div id="auth-modal-overlay" class="fixed inset-0 z-50 hidden bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-lg p-5 sm:p-6 shadow-2xl relative">
             
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 text-lg">✕</button>
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200 text-sm">✕</button>
 
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 rounded-xl bg-brand-600/20 border border-brand-500/30 text-brand-400 flex items-center justify-center text-2xl mx-auto mb-3">🔑</div>
-                <h2 class="text-xl font-bold text-white">Creator Sign In</h2>
-                <p class="text-xs text-slate-400 mt-1">Unlock 50 Free Weekly Comments, Harassment Vault & Chrome Extension</p>
+            <div class="text-center mb-5">
+                <h2 class="text-base font-semibold text-zinc-100">Sign In</h2>
+                <p class="text-xs text-zinc-400 mt-1">Access weekly quota, evidence logs, and extension download</p>
             </div>
 
             <!-- Google Sign In -->
-            <button onclick="firebaseGoogleLogin()" class="w-full py-3 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm rounded-xl flex items-center justify-center space-x-2 transition-all mb-4">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.8 7.4 23 12 23z"/></svg>
+            <button onclick="firebaseGoogleLogin()" class="w-full py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded flex items-center justify-center space-x-2 transition-colors mb-3">
+                <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.8 7.4 23 12 23z"/></svg>
                 <span>Continue with Google</span>
             </button>
 
-            <div class="flex items-center my-4">
-                <div class="flex-grow border-b border-cardborder"></div>
-                <span class="px-3 text-[10px] text-slate-500 font-medium uppercase">Or Email</span>
-                <div class="flex-grow border-b border-cardborder"></div>
+            <div class="flex items-center my-3">
+                <div class="flex-grow border-b border-zinc-800"></div>
+                <span class="px-2 text-[10px] font-mono text-zinc-500 uppercase">Or Email</span>
+                <div class="flex-grow border-b border-zinc-800"></div>
             </div>
 
             <!-- Email Form -->
-            <form id="email-auth-form" onsubmit="handleEmailAuth(event)" class="space-y-3">
+            <form id="email-auth-form" onsubmit="handleEmailAuth(event)" class="space-y-2.5">
                 <div>
-                    <input type="email" id="auth-email" placeholder="Email address" required class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-brand-500"/>
+                    <input type="email" id="auth-email" placeholder="Email address" required class="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700"/>
                 </div>
                 <div>
-                    <input type="password" id="auth-password" placeholder="Password" required class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-brand-500"/>
+                    <input type="password" id="auth-password" placeholder="Password" required class="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700"/>
                 </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs rounded-lg transition-all">Log In</button>
-                    <button type="button" onclick="handleEmailSignup()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-lg border border-slate-700 transition-all">Sign Up</button>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit" class="flex-1 py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded transition-colors">Log In</button>
+                    <button type="button" onclick="handleEmailSignup()" class="flex-1 py-2 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 font-medium text-xs border border-zinc-800 rounded transition-colors">Sign Up</button>
                 </div>
             </form>
 
-            <div id="auth-error-msg" class="hidden mt-3 text-center text-xs text-red-400 font-medium"></div>
+            <div id="auth-error-msg" class="hidden mt-3 text-center text-xs text-red-400 font-mono"></div>
         </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="py-6 border-t border-cardborder text-center text-xs text-slate-500">
-        Creator Safety Shield &copy; 2026. Built with Flask, Firebase & Neon DB.
+    <footer class="py-5 border-t border-zinc-900 text-center text-[11px] font-mono text-zinc-500">
+        Creator Safety Shield — Comment Moderation SaaS & Evidence Vault
     </footer>
 
-    <!-- JAVASCRIPT APP LOGIC -->
+    <!-- JAVASCRIPT APP & NAVIGATION LOGIC -->
     <script>
-        const LIMIT_GUEST = 5;
-        const LIMIT_FREE = 50;
-        const LIMIT_PRO = 3000;
+        const LIMIT_GUEST = {{ limit_guest }};
+        const LIMIT_FREE = {{ limit_free }};
+        const LIMIT_PRO = {{ limit_pro }};
+        const PLAN_PRICE_INR = {{ plan_price_inr }};
 
         let currentUser = null;
 
@@ -450,6 +552,42 @@
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
+
+        // SAAS MULTI-PAGE NAVIGATION ROUTER
+        const views = ['home', 'tester', 'vault', 'extension', 'pricing'];
+
+        function navigateTo(targetView) {
+            views.forEach(v => {
+                const section = document.getElementById(`view-${v}`);
+                const navLink = document.getElementById(`nav-link-${v}`);
+                
+                if (section) {
+                    if (v === targetView) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                }
+                if (navLink) {
+                    if (v === targetView) {
+                        navLink.classList.add('border-zinc-100', 'text-zinc-100');
+                        navLink.classList.remove('border-transparent', 'text-zinc-400');
+                    } else {
+                        navLink.classList.remove('border-zinc-100', 'text-zinc-100');
+                        navLink.classList.add('border-transparent', 'text-zinc-400');
+                    }
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleNavExtensionClick() {
+            if (!currentUser) {
+                openAuthModal();
+            } else {
+                navigateTo('extension');
+            }
+        }
 
         // Local Storage Guest Count
         function getGuestCount() {
@@ -481,9 +619,9 @@
             if (cache.length > 0 && !currentUser) {
                 section.classList.remove("hidden");
                 listDiv.innerHTML = cache.map(item => `
-                    <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs flex justify-between items-center">
-                        <span class="text-slate-300 truncate max-w-[70%]">"${item.comment}"</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.is_toxic ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}">${item.label}</span>
+                    <div class="p-2 rounded bg-zinc-950 border border-zinc-800 text-[11px] font-mono flex justify-between items-center">
+                        <span class="text-zinc-300 truncate max-w-[70%]">"${item.comment}"</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] uppercase ${item.is_toxic ? 'bg-red-950/60 text-red-400' : 'bg-zinc-800 text-zinc-400'}">${item.label}</span>
                     </div>
                 `).join('');
             } else {
@@ -500,27 +638,28 @@
 
             if (!currentUser) {
                 // GUEST MODE
-                document.getElementById("plan-status-disp").innerText = "Free Guest Tier";
-                document.getElementById("quota-label-disp").innerText = "Guest Mode Quota";
+                document.getElementById("plan-status-disp").innerText = "Guest Tier";
+                document.getElementById("quota-label-disp").innerText = "Guest Session Quota";
                 document.getElementById("quota-val-disp").innerText = `${guestCount} / ${LIMIT_GUEST}`;
                 document.getElementById("quota-progress-fill").style.width = `${(guestCount / LIMIT_GUEST) * 100}%`;
 
-                // Lock Extension Buttons
+                // Lock Extension Icons & Cards
                 document.getElementById("nav-ext-lock-icon").innerText = "🔒";
-                document.getElementById("section-ext-lock-icon").innerText = "🔒";
+                document.getElementById("ext-locked-card").classList.remove("hidden");
+                document.getElementById("ext-unlocked-card").classList.add("hidden");
 
-                // Lock Evidence Tab
+                // Lock Evidence Vault
                 document.getElementById("evidence-locked-msg").classList.remove("hidden");
                 document.getElementById("evidence-content-box").classList.add("hidden");
 
                 if (guestCount >= LIMIT_GUEST) {
                     lockBox.classList.remove("hidden");
                     submitBtn.disabled = true;
-                    submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+                    submitBtn.classList.add("opacity-40", "cursor-not-allowed");
                 } else {
                     lockBox.classList.add("hidden");
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                    submitBtn.classList.remove("opacity-40", "cursor-not-allowed");
                 }
 
                 document.getElementById("nav-user-profile").classList.add("hidden");
@@ -529,12 +668,13 @@
 
             } else {
                 // SIGNED IN USER
-                document.getElementById("plan-status-disp").innerText = "Free Creator Tier (50/wk)";
+                document.getElementById("plan-status-disp").innerText = "Free Tier (50/wk)";
                 document.getElementById("quota-label-disp").innerText = "Weekly Free Quota";
                 
-                // Unlock Extension Buttons
+                // Unlock Extension Icons & Cards
                 document.getElementById("nav-ext-lock-icon").innerText = "🔓";
-                document.getElementById("section-ext-lock-icon").innerText = "🔓";
+                document.getElementById("ext-locked-card").classList.add("hidden");
+                document.getElementById("ext-unlocked-card").classList.remove("hidden");
 
                 // Unlock Evidence Vault
                 document.getElementById("evidence-locked-msg").classList.add("hidden");
@@ -542,7 +682,7 @@
 
                 lockBox.classList.add("hidden");
                 submitBtn.disabled = false;
-                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                submitBtn.classList.remove("opacity-40", "cursor-not-allowed");
 
                 // User Info
                 document.getElementById("nav-user-profile").classList.remove("hidden");
@@ -618,7 +758,7 @@
                 })
                 .then(res => {
                     if (res.status === 401) {
-                        alert("Unauthorized! Please sign in first.");
+                        alert("Unauthorized. Please sign in first.");
                         return;
                     }
                     return res.blob();
@@ -667,44 +807,57 @@
                     user_id: currentUser ? currentUser.uid : null
                 })
             })
-            .then(res => res.text())
-            .then(html => {
-                document.open();
-                document.write(html);
-                document.close();
-            });
-        }
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success" && data.result) {
+                    const res = data.result;
+                    const resContainer = document.getElementById("live-result-container");
+                    
+                    let statusBadgeClass = res.is_toxic 
+                        ? "bg-red-950/60 text-red-400 border border-red-800/50" 
+                        : "bg-zinc-800 text-zinc-300 border border-zinc-700";
+                        
+                    let categoryHtml = res.category 
+                        ? `<div class="text-[11px] font-mono text-zinc-400">Category: <span class="text-zinc-200">${res.category}</span></div>` 
+                        : "";
+                        
+                    let threatHtml = res.threat_detected 
+                        ? `<div class="p-2.5 rounded border border-red-900/60 bg-red-950/30 text-[11px] font-mono text-red-300">Threat Alert: High-risk severe threat pattern detected. Archived to vault.</div>` 
+                        : "";
+                        
+                    resContainer.innerHTML = `
+                        <div class="p-4 rounded border border-zinc-800 bg-zinc-950 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-mono text-zinc-400">Classification Result</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${statusBadgeClass}">
+                                    ${res.label}
+                                </span>
+                            </div>
+                            ${categoryHtml}
+                            ${threatHtml}
+                            <div class="text-[11px] font-mono text-zinc-500">
+                                Model Confidence: <span class="text-zinc-300">${(res.confidence * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    `;
 
-        // Switch Tabs
-        function switchTab(tab) {
-            const playgroundTab = document.getElementById("tab-playground");
-            const evidenceTab = document.getElementById("tab-evidence");
-            const playgroundBtn = document.getElementById("tab-btn-playground");
-            const evidenceBtn = document.getElementById("tab-btn-evidence");
+                    if (!currentUser) {
+                        saveToGuestCache({ comment, label: res.label, is_toxic: res.is_toxic });
+                    }
 
-            if (tab === 'playground') {
-                playgroundTab.classList.remove("hidden");
-                evidenceTab.classList.add("hidden");
-                playgroundBtn.classList.add("border-brand-500", "text-brand-400");
-                playgroundBtn.classList.remove("border-transparent", "text-slate-400");
-                evidenceBtn.classList.remove("border-brand-500", "text-brand-400");
-                evidenceBtn.classList.add("border-transparent", "text-slate-400");
-            } else {
-                playgroundTab.classList.add("hidden");
-                evidenceTab.classList.remove("hidden");
-                evidenceBtn.classList.add("border-brand-500", "text-brand-400");
-                evidenceBtn.classList.remove("border-transparent", "text-slate-400");
-                playgroundBtn.classList.remove("border-brand-500", "text-brand-400");
-                playgroundBtn.classList.add("border-transparent", "text-slate-400");
-            }
+                    updateUIState();
+                    navigateTo('tester');
+                }
+            })
+            .catch(err => console.error("Analysis failed:", err));
         }
 
         function clearVaultLogs() {
-            if (!confirm("Are you sure you want to clear all harassment evidence vault records?")) return;
+            if (!confirm("Are you sure you want to clear all evidence vault records?")) return;
             fetch("/api/clear-logs", { method: "POST" })
                 .then(res => res.json())
                 .then(() => {
-                    alert("Vault cleared successfully!");
+                    alert("Vault records cleared.");
                     window.location.reload();
                 })
                 .catch(() => alert("Failed to clear vault."));
@@ -714,7 +867,7 @@
         function openRazorpayCheckout() {
             if (!currentUser) {
                 openAuthModal();
-                alert("🔑 Please sign in before upgrading to Creator Pro.");
+                alert("Please sign in before upgrading to Creator Pro.");
                 return;
             }
             currentUser.getIdToken().then(token => {
@@ -747,7 +900,7 @@
                             })
                             .then(res => res.json())
                             .then(verificationRes => {
-                                alert("🎉 " + verificationRes.message);
+                                alert(verificationRes.message);
                                 window.location.reload();
                             });
                         }
@@ -758,8 +911,15 @@
             });
         }
 
-        // Initial UI Update
-        document.addEventListener("DOMContentLoaded", updateUIState);
+        // Initial UI Update & Route
+        document.addEventListener("DOMContentLoaded", () => {
+            updateUIState();
+            {% if result %}
+                navigateTo('tester');
+            {% else %}
+                navigateTo('home');
+            {% endif %}
+        });
     </script>
 </body>
 </html>

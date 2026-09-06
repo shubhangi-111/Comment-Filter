@@ -18,6 +18,8 @@ from db.connection import (
 )
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # Initialize Database Schema on Application Startup
 try:
@@ -43,10 +45,11 @@ API_KEY = os.environ.get("API_KEY") # No default, fail closed if missing
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 
-# 3-Tier Quota Limits
-LIMIT_GUEST = 5          # 5 free tests (local browser cache)
-LIMIT_FREE_USER = 50     # 50 comments / week (Signed-in Unpaid)
-LIMIT_PAID_PRO = 3000    # 3,000 comments / month (₹99/mo Paid Subscriber)
+# 3-Tier Quota Limits & Pricing (Configurable via Environment Variables)
+LIMIT_GUEST = int(os.environ.get("LIMIT_GUEST", 5))          # Free tests (local browser cache)
+LIMIT_FREE_USER = int(os.environ.get("LIMIT_FREE_USER", 50))    # Comments / week (Signed-in Free)
+LIMIT_PAID_PRO = int(os.environ.get("LIMIT_PAID_PRO", 3000))   # Comments / month (Paid Pro)
+PLAN_PRICE_INR = int(os.environ.get("PLAN_PRICE_INR", 99))    # Monthly Pro price in INR
 
 def get_authenticated_user(req):
     """
@@ -112,6 +115,16 @@ def home():
                 else:
                     result["error"] = "QUOTA_EXCEEDED"
 
+        if request.is_json:
+            logs = get_recent_moderation_logs(limit=50)
+            stats = get_usage_stats()
+            return jsonify({
+                "status": "success",
+                "result": result,
+                "logs": logs,
+                "stats": stats
+            }), 200
+
     logs = get_recent_moderation_logs(limit=50)
     stats = get_usage_stats()
     return render_template(
@@ -123,6 +136,7 @@ def home():
         limit_guest=LIMIT_GUEST,
         limit_free=LIMIT_FREE_USER,
         limit_pro=LIMIT_PAID_PRO,
+        plan_price_inr=PLAN_PRICE_INR,
         razorpay_key_id=RAZORPAY_KEY_ID
     )
 
@@ -280,10 +294,10 @@ def razorpay_create_order():
     return jsonify({
         "status": "success",
         "order_id": order_id,
-        "amount": 9900,
+        "amount": PLAN_PRICE_INR * 100,
         "currency": "INR",
         "key_id": RAZORPAY_KEY_ID or "rzp_test_CreatorShield",
-        "plan_name": "Creator Pro Safety Shield (₹99/mo)"
+        "plan_name": f"Creator Pro Safety Shield (₹{PLAN_PRICE_INR}/mo)"
     }), 200
 
 @app.route("/api/razorpay/verify-payment", methods=["POST"])
@@ -316,14 +330,16 @@ def razorpay_verify_payment():
 
 @app.after_request
 def apply_security_headers(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
 if __name__ == "__main__":
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", 5000))
-    debug = os.environ.get("FLASK_ENV") == "development"
-    app.run(host=host, port=port, debug=debug)
+    debug = os.environ.get("FLASK_ENV", "development") == "development"
+    app.run(host=host, port=port, debug=True)

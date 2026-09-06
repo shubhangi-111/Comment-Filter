@@ -70,13 +70,10 @@ class Subscription(Base):
 from sqlalchemy import text
 
 def init_db():
+    if is_sqlite:
+        print("[DB] Local SQLite development mode detected. Resetting database tables for a clean test run...")
+        Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE moderation_logs ADD COLUMN user_id VARCHAR(255)"))
-            conn.commit()
-    except Exception:
-        pass
     print("[DB] Database initialized successfully with SQLAlchemy.")
 
 def log_moderation_event(author_username, author_name, comment_text, prediction, platform="Web Playground", user_id=None):
