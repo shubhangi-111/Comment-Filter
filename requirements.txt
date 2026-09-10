@@ -1,4 +1,11 @@
-pandas
-scikit-learn
-numpy
-flask
+pandas>=2.0.0
+scikit-learn>=1.4.0
+numpy>=1.26.0
+flask>=3.0.0
+gunicorn>=21.2.0
+waitress>=2.1.2
+psycopg2-binary>=2.9.9
+firebase-admin>=6.5.0
+SQLAlchemy>=2.0.27
+pytest>=8.0.0
+requests>=2.31.0

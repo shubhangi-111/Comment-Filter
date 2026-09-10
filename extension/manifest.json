@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Creator Safety Shield AI",
+  "version": "1.0.0",
+  "description": "Real-time AI Harassment, Misogyny & Slur Shield for YouTube Comments & Instagram Reels.",
+  "icons": {
+    "128": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:5000/*",
+    "https://*.youtube.com/*",
+    "https://*.instagram.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*",
+        "https://*.instagram.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+name: Endpoint Keep-Alive Ping
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          URL="${{ secrets.APP_HEALTH_URL }}"
+          if [ -z "$URL" ]; then
+            URL="https://creator-safety-shield.onrender.com/health"
+          fi
+          echo "Pinging $URL..."
+          HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$URL")
+          echo "HTTP Status Code: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Health check ping failed with status $HTTP_STATUS"
+            exit 1
+          fi

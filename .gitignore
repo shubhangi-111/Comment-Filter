@@ -1,3 +1,8 @@
-data/
-*.csv
-venv/
+__pycache__/
+*.pyc
+.env
+data/app.db
+data/jigsaw-unintended-bias-in-toxicity-classification/
+.venv/
+env/
+.pytest_cache/
