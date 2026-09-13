@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Comment Filter Training Lab</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            font-size: 15px;
+            resize: vertical;
+        }
+
+        button,
+        select {
+            padding: 10px 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        button {
+            font-weight: bold;
+        }
+
+        .stats {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f2f2f2;
+            border-radius: 6px;
+        }
+
+        .prediction {
+            margin-top: 25px;
+        }
+
+        .row {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+
+        .comment {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .model-result {
+            margin-bottom: 5px;
+        }
+
+        .confidence {
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .label-section {
+            margin-top: 10px;
+        }
+
+        .category-section {
+            margin-top: 12px;
+        }
+
+        .suggestion {
+            color: #555;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .ai-button {
+            margin-top: 5px;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .actions {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        .message {
+            white-space: pre-wrap;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f2f2f2;
+            border-radius: 5px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <h1>🧪 Comment Filter Training Lab</h1>
+
+    <p>
+        Enter one comment per line. Analyze them together,
+        review the AI suggestions, and save your labels.
+    </p>
+
+
+    <!-- ========================= -->
+    <!-- DATASET COUNTER -->
+    <!-- ========================= -->
+
+    <div class="stats">
+
+        <strong>
+            📊 Labelled examples:
+        </strong>
+
+        {{ dataset_count }}
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- BATCH INPUT -->
+    <!-- ========================= -->
+
+    <form method="POST">
+
+        <textarea
+            name="comments"
+            rows="12"
+            placeholder="Enter one comment per line..."
+        ></textarea>
+
+        <br>
+
+        <button
+            type="submit"
+            name="action"
+            value="analyze"
+        >
+            🔍 Analyze All
+        </button>
+
+    </form>
+
+
+    <!-- ========================= -->
+    <!-- RESULTS -->
+    <!-- ========================= -->
+
+    {% if predictions %}
+
+        <form method="POST">
+
+            <div class="prediction">
+
+                <h2>
+                    {{ predictions|length }}
+                    comments analyzed
+                </h2>
+
+
+                <button
+                    type="button"
+                    id="acceptAllButton"
+                >
+                    ✓ Accept All AI Suggestions
+                </button>
+
+
+                {% for item in predictions %}
+
+                    <div class="row">
+
+                        <!-- COMMENT -->
+
+                        <div class="comment">
+
+                            {{ item.comment }}
+
+                        </div>
+
+
+                        <!-- TOXICITY -->
+
+                        <div class="model-result">
+
+                            Model prediction:
+
+                            <strong>
+                                {{ item.label }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="confidence">
+
+                            Confidence:
+                            {{ item.confidence }}%
+
+                        </div>
+
+
+                        <input
+                            type="hidden"
+                            name="comment"
+                            value="{{ item.comment }}"
+                        >
+
+
+                        <!-- HUMAN TOXICITY LABEL -->
+
+                        <div class="label-section">
+
+                            <strong>
+                                Your Label:
+                            </strong>
+
+                            <br>
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    class="toxic-radio"
+                                    name="toxic_label_{{ loop.index0 }}"
+                                    value="1"
+                                    required
+                                >
+
+                                Toxic
+
+                            </label>
+
+                            <br>
+
+                            <label>
+
+                                <input
+                                    type="radio"
+                                    class="non-toxic-radio"
+                                    name="toxic_label_{{ loop.index0 }}"
+                                    value="0"
+                                >
+
+                                Non-Toxic
+
+                            </label>
+
+
+                            <br>
+
+                            <button
+                                type="button"
+                                class="ai-button accept-ai"
+                                data-index="{{ loop.index0 }}"
+                                data-prediction="{{ item.label }}"
+                            >
+                                ✓ Accept AI prediction
+                            </button>
+
+                        </div>
+
+
+                        <!-- CATEGORY -->
+
+                        <div class="category-section">
+
+                            <strong>
+                                Category:
+                            </strong>
+
+
+                            {% if item.category %}
+
+                                <div class="suggestion">
+
+                                    Suggested:
+                                    <strong>
+                                        {{ item.category }}
+                                    </strong>
+
+                                    (rule-based suggestion)
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <br>
+
+                            <select
+                                name="category"
+                                class="category-select"
+                            >
+
+                                <option value="">
+                                    None
+                                </option>
+
+                                <option
+                                    value="abuse"
+                                    {% if item.category == "abuse" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Abuse
+                                </option>
+
+                                <option
+                                    value="harassment"
+                                    {% if item.category == "harassment" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Harassment
+                                </option>
+
+                                <option
+                                    value="threat"
+                                    {% if item.category == "threat" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Threat
+                                </option>
+
+                                <option
+                                    value="spam"
+                                    {% if item.category == "spam" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Spam
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- SAVE -->
+
+            <div class="actions">
+
+                <button
+                    type="submit"
+                    name="action"
+                    value="save"
+                >
+                    💾 SAVE ALL
+                </button>
+
+            </div>
+
+        </form>
+
+    {% endif %}
+
+
+    <!-- ========================= -->
+    <!-- RETRAIN -->
+    <!-- ========================= -->
+
+    <div class="actions">
+
+        <h2>
+            🧠 Model Training
+        </h2>
+
+        <p>
+            Save your labelled examples first,
+            then retrain the model.
+        </p>
+
+        <form method="POST">
+
+            <button
+                type="submit"
+                name="action"
+                value="retrain"
+            >
+                🧠 RETRAIN MODEL
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- MESSAGES -->
+    <!-- ========================= -->
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="message">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ========================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ========================= -->
+
+    <script>
+
+        // Accept AI toxicity prediction
+
+        document
+            .querySelectorAll(".accept-ai")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const index =
+                            this.dataset.index;
+
+                        const prediction =
+                            this.dataset.prediction;
+
+
+                        if (
+                            prediction === "Toxic"
+                        ) {
+
+                            document.querySelector(
+                                `input[name="toxic_label_${index}"][value="1"]`
+                            ).checked = true;
+
+                        }
+
+                        else {
+
+                            document.querySelector(
+                                `input[name="toxic_label_${index}"][value="0"]`
+                            ).checked = true;
+
+                        }
+
+                    }
+                );
+
+            });
+
+
+        // Accept all AI suggestions
+
+        document
+            .getElementById("acceptAllButton")
+            .addEventListener(
+                "click",
+                function () {
+
+                    document
+                        .querySelectorAll(".accept-ai")
+                        .forEach(button => {
+
+                            button.click();
+
+                        });
+
+                }
+            );
+
+    </script>
+
+
+</body>
+
+</html>
