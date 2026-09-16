@@ -1,0 +1,838 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: #f7f5ef;
+    color: #000;
+    overflow-x: hidden;
+}
+
+
+/* =========================
+   BACKGROUND
+========================= */
+
+.background-shape {
+    position: fixed;
+    background: #16e6e6;
+    z-index: -2;
+}
+
+.shape-one {
+    width: 62vw;
+    height: 90vh;
+    top: 0;
+    left: 0;
+}
+
+.shape-two {
+    width: 35vw;
+    height: 50vh;
+    right: 0;
+    bottom: 0;
+}
+
+.shape-three {
+    width: 30vw;
+    height: 28vh;
+    left: 25vw;
+    bottom: 0;
+}
+
+
+/* =========================
+   PAGE
+========================= */
+
+.page {
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 32px 3vw;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* =========================
+   MAIN PANEL
+========================= */
+
+.lab-panel {
+    width: min(1250px, 100%);
+
+    background: #16e6e6;
+
+    border: 5px solid #000;
+    border-radius: 15px;
+
+    padding: 32px;
+
+    position: relative;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.lab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 30px;
+
+    margin-bottom: 34px;
+}
+
+.brand h1 {
+    font-size: clamp(5rem, 11vw, 8rem);
+
+    line-height: 0.72;
+
+    font-weight: 950;
+
+    letter-spacing: -0.09em;
+}
+
+.brand p {
+    margin-top: 18px;
+
+    font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+
+    line-height: 1;
+
+    font-weight: 950;
+
+    letter-spacing: -0.05em;
+}
+
+.tagline {
+    display: block;
+
+    margin-top: 12px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.85rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* =========================
+   DATASET BADGE
+========================= */
+
+.dataset-count {
+    min-width: 175px;
+
+    border: 4px solid #000;
+    border-radius: 10px;
+
+    padding: 17px 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #f7f5ef;
+}
+
+.dataset-count span {
+    font-family: "Courier New", monospace;
+
+    font-size: 0.75rem;
+
+    font-weight: 900;
+
+    letter-spacing: 0.08em;
+}
+
+.dataset-count strong {
+    font-family: "Courier New", monospace;
+
+    font-size: 2.8rem;
+
+    line-height: 1;
+
+    margin-top: 6px;
+}
+
+.dataset-count small {
+    font-family: "Courier New", monospace;
+
+    margin-top: 7px;
+
+    font-size: 0.7rem;
+}
+
+
+/* =========================
+   GRID
+========================= */
+
+.top-grid,
+.middle-grid,
+.bottom-grid {
+    display: grid;
+
+    gap: 14px;
+}
+
+.top-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
+.middle-grid {
+    grid-template-columns: 1fr 1fr;
+
+    margin-top: 14px;
+}
+
+.bottom-grid {
+    grid-template-columns: 1fr 1fr;
+
+    margin-top: 14px;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.lab-card {
+    border: 3px solid #000;
+    border-radius: 10px;
+
+    padding: 20px;
+
+    background: #16e6e6;
+}
+
+.card-title {
+    font-size: 1rem;
+
+    font-weight: 950;
+
+    letter-spacing: -0.02em;
+
+    margin-bottom: 10px;
+}
+
+.card-title span {
+    margin-right: 5px;
+}
+
+.helper-text {
+    font-family: "Courier New", monospace;
+
+    font-size: 0.72rem;
+
+    line-height: 1.5;
+
+    margin-top: 10px;
+}
+
+
+/* =========================
+   INPUTS
+========================= */
+
+input[type="file"] {
+    width: 100%;
+
+    background: #f7f5ef;
+
+    border: 3px solid #000;
+    border-radius: 8px;
+
+    padding: 9px;
+
+    font-family: inherit;
+
+    font-size: 0.8rem;
+}
+
+textarea {
+    width: 100%;
+
+    min-height: 105px;
+
+    resize: vertical;
+
+    background: #f7f5ef;
+
+    border: 3px solid #000;
+    border-radius: 9px;
+
+    padding: 15px;
+
+    color: #000;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.82rem;
+
+    line-height: 1.5;
+
+    outline: none;
+
+    transition: box-shadow 0.12s ease;
+}
+
+textarea:focus,
+select:focus,
+input[type="file"]:focus {
+    box-shadow: 4px 4px 0 #000;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.button-row {
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 14px;
+}
+
+.black-button,
+.outline-button {
+    border: 3px solid #000;
+    border-radius: 8px;
+
+    padding: 12px 17px;
+
+    font-family: inherit;
+
+    font-size: 0.75rem;
+
+    font-weight: 950;
+
+    letter-spacing: 0.03em;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.black-button {
+    background: #000;
+    color: #fff;
+}
+
+.outline-button {
+    background: #f7f5ef;
+    color: #000;
+}
+
+.black-button span {
+    margin-left: 12px;
+
+    font-size: 1rem;
+}
+
+.black-button:hover,
+.outline-button:hover {
+    transform: translate(-2px, -2px);
+
+    box-shadow: 4px 4px 0 #000;
+}
+
+.black-button:active,
+.outline-button:active {
+    transform: translate(0, 0);
+
+    box-shadow: none;
+}
+
+.large-button {
+    padding: 14px 20px;
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+.message {
+    border: 3px solid #000;
+    border-radius: 8px;
+
+    padding: 13px 16px;
+
+    margin-top: 14px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.78rem;
+
+    font-weight: 700;
+}
+
+.success-message {
+    background: #f7f5ef;
+}
+
+.error-message {
+    background: #ffb7b7;
+}
+
+
+/* =========================
+   EXTRACTED COMMENTS
+========================= */
+
+.comment-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 15px;
+}
+
+.comment-row {
+    display: grid;
+
+    grid-template-columns: 38px 1fr 40px;
+
+    align-items: center;
+
+    gap: 7px;
+}
+
+.comment-number {
+    font-family: "Courier New", monospace;
+
+    font-size: 0.72rem;
+
+    font-weight: 900;
+}
+
+.extracted-input {
+    min-height: 44px;
+
+    height: 44px;
+
+    padding: 9px 12px;
+
+    resize: none;
+
+    font-size: 0.76rem;
+}
+
+.delete-button {
+    width: 40px;
+    height: 40px;
+
+    border: 3px solid #000;
+    border-radius: 7px;
+
+    background: #f7f5ef;
+
+    font-size: 1.3rem;
+
+    font-weight: 900;
+
+    cursor: pointer;
+
+    line-height: 1;
+
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.delete-button:hover {
+    transform: translate(-2px, -2px);
+
+    box-shadow: 3px 3px 0 #000;
+}
+
+.empty-state {
+    border: 2px dashed #000;
+
+    border-radius: 7px;
+
+    padding: 25px 15px;
+
+    margin-top: 15px;
+
+    text-align: center;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.75rem;
+}
+
+
+/* =========================
+   PREDICTIONS
+========================= */
+
+.predictions-card {
+    margin-top: 14px;
+}
+
+.prediction-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    margin-top: 15px;
+}
+
+.prediction-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1.6fr)
+        minmax(140px, 0.8fr)
+        minmax(120px, 0.7fr)
+        minmax(130px, 0.7fr);
+
+    gap: 0;
+
+    background: #f7f5ef;
+
+    border: 3px solid #000;
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+.prediction-comment,
+.prediction-model,
+.prediction-label,
+.prediction-category {
+    padding: 15px;
+
+    min-width: 0;
+}
+
+.prediction-model,
+.prediction-label,
+.prediction-category {
+    border-left: 2px solid #000;
+}
+
+.prediction-comment p {
+    font-family: "Courier New", monospace;
+
+    font-size: 0.78rem;
+
+    line-height: 1.5;
+
+    word-break: break-word;
+}
+
+.mini-label {
+    display: block;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.62rem;
+
+    font-weight: 900;
+
+    margin-bottom: 7px;
+}
+
+.prediction-model strong {
+    display: block;
+
+    font-size: 1.2rem;
+
+    font-weight: 950;
+
+    letter-spacing: -0.04em;
+}
+
+.prediction-model small {
+    display: block;
+
+    margin-top: 4px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.65rem;
+}
+
+.toxic-text {
+    color: #000;
+}
+
+.safe-text {
+    color: #000;
+}
+
+
+/* =========================
+   RADIO BUTTONS
+========================= */
+
+.radio-option {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 7px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.68rem;
+
+    cursor: pointer;
+}
+
+.radio-option input {
+    appearance: none;
+
+    width: 15px;
+    height: 15px;
+
+    border: 2px solid #000;
+
+    border-radius: 50%;
+
+    background: #f7f5ef;
+
+    cursor: pointer;
+
+    position: relative;
+}
+
+.radio-option input:checked::after {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    position: absolute;
+
+    top: 2px;
+    left: 2px;
+
+    border-radius: 50%;
+
+    background: #000;
+}
+
+
+/* =========================
+   SELECT
+========================= */
+
+select {
+    width: 100%;
+
+    background: #f7f5ef;
+
+    border: 3px solid #000;
+    border-radius: 7px;
+
+    padding: 8px 9px;
+
+    font-family: inherit;
+
+    font-size: 0.72rem;
+
+    outline: none;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   PREDICTION ACTIONS
+========================= */
+
+.prediction-actions {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 15px;
+}
+
+.prediction-actions form {
+    margin: 0;
+}
+
+
+/* =========================
+   ACTION CARDS
+========================= */
+
+.action-card {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.action-note {
+    font-family: "Courier New", monospace;
+
+    font-size: 0.65rem;
+
+    opacity: 0.7;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-top: 25px;
+
+    padding: 0 3px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 0.65rem;
+
+    font-weight: 700;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+    .prediction-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .prediction-model,
+    .prediction-label,
+    .prediction-category {
+        border-left: none;
+        border-top: 2px solid #000;
+    }
+
+    .prediction-comment {
+        grid-column: 1 / -1;
+    }
+
+    .prediction-model {
+        border-left: none;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .page {
+        padding: 18px 10px;
+    }
+
+    .lab-panel {
+        padding: 22px 16px;
+    }
+
+    .lab-header {
+        flex-direction: column;
+    }
+
+    .dataset-count {
+        width: 100%;
+    }
+
+    .top-grid,
+    .middle-grid,
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .brand h1 {
+        font-size: 5rem;
+    }
+
+    .prediction-row {
+        grid-template-columns: 1fr;
+    }
+
+    .prediction-comment {
+        grid-column: auto;
+    }
+
+    .prediction-model,
+    .prediction-label,
+    .prediction-category {
+        border-left: none;
+        border-top: 2px solid #000;
+    }
+
+    .prediction-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .prediction-actions button {
+        width: 100%;
+    }
+
+    .action-card {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    footer {
+        flex-direction: column;
+
+        gap: 7px;
+    }
+
+    .shape-one {
+        width: 90vw;
+    }
+
+    .shape-two {
+        width: 60vw;
+    }
+
+    .shape-three {
+        display: none;
+    }
+}

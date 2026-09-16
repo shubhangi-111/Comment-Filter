@@ -1,18 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Comment Filter</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PBL-3 — Comment Filter</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <script
+        src="{{ url_for('static', filename='js/main.js') }}"
+        defer
+    ></script>
 </head>
+
 <body>
-    <h2>AI Comment Filter</h2>
 
-    <form method="POST">
-        <textarea name="comment" rows="5" cols="50" placeholder="Enter comment"></textarea><br><br>
-        <button type="submit">Analyze</button>
-    </form>
+    <div class="background-shape shape-one"></div>
+    <div class="background-shape shape-two"></div>
+    <div class="background-shape shape-three"></div>
 
-    {% if result %}
-        <h3>Result: {{ result }}</h3>
-    {% endif %}
+    <main class="page">
+
+        <section class="app-panel">
+
+            <header class="brand">
+                <h1>PBL-3</h1>
+                <p>COMMENT FILTER</p>
+            </header>
+
+
+            <section class="analyzer">
+
+                <div class="section-label">
+                    ANALYZE COMMENT
+                </div>
+
+                <form method="POST">
+
+                    <textarea
+                        id="comment"
+                        name="comment"
+                        placeholder="Paste a comment here..."
+                        required
+                    ></textarea>
+
+                    <div class="action-row">
+                        <button
+                            type="submit"
+                            class="analyze-button"
+                        >
+                            ANALYZE
+                            <span>→</span>
+                        </button>
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            {% if result %}
+
+            <section class="result-section">
+
+                <div class="section-label">
+                    RESULT
+                </div>
+
+                <div
+                    class="result-card
+                    {% if result.label == 'Toxic' %}
+                        toxic
+                    {% else %}
+                        safe
+                    {% endif %}"
+                >
+
+                    <div class="result-main">
+
+                        <div class="result-status">
+
+                            {% if result.label == "Toxic" %}
+                                <span class="warning-icon">!</span>
+                            {% else %}
+                                <span class="safe-icon">✓</span>
+                            {% endif %}
+
+                            <span class="result-label">
+                                {{ result.label|upper }}
+                            </span>
+
+                        </div>
+
+
+                        <div class="confidence">
+                            Confidence:
+                            {{ "%.2f"|format(result.confidence * 100) }}%
+                        </div>
+
+                    </div>
+
+
+                    <div class="confidence-track">
+                        <div
+                            class="confidence-fill"
+                            style="width: {{ result.confidence * 100 }}%;"
+                        ></div>
+                    </div>
+
+
+                    <p class="disclaimer">
+                        This is an AI classification and should be reviewed
+                        in context.
+                    </p>
+
+                </div>
+
+            </section>
+
+            {% endif %}
+
+
+            <footer>
+                PBL-3 · COMMENT FILTER
+            </footer>
+
+        </section>
+
+    </main>
+
 </body>
 </html>

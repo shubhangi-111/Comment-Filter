@@ -1,503 +1,712 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Comment Filter Training Lab</title>
+    <title>PBL-3 — Training Lab</title>
 
-    <style>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/trainer.css') }}"
+    >
 
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        h1 {
-            margin-bottom: 8px;
-        }
-
-        textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            font-size: 15px;
-            resize: vertical;
-        }
-
-        button,
-        select {
-            padding: 10px 16px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-
-        button {
-            font-weight: bold;
-        }
-
-        .stats {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f2f2f2;
-            border-radius: 6px;
-        }
-
-        .prediction {
-            margin-top: 25px;
-        }
-
-        .row {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-        }
-
-        .comment {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .model-result {
-            margin-bottom: 5px;
-        }
-
-        .confidence {
-            color: #555;
-            margin-bottom: 12px;
-        }
-
-        .label-section {
-            margin-top: 10px;
-        }
-
-        .category-section {
-            margin-top: 12px;
-        }
-
-        .suggestion {
-            color: #555;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .ai-button {
-            margin-top: 5px;
-            font-size: 13px;
-            font-weight: normal;
-        }
-
-        .actions {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
-        }
-
-        .message {
-            white-space: pre-wrap;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f2f2f2;
-            border-radius: 5px;
-        }
-
-    </style>
-
+    <script
+        src="{{ url_for('static', filename='js/trainer.js') }}"
+        defer
+    ></script>
 </head>
-
 
 <body>
 
-    <h1>🧪 Comment Filter Training Lab</h1>
-
-    <p>
-        Enter one comment per line. Analyze them together,
-        review the AI suggestions, and save your labels.
-    </p>
+    <!-- Background shapes -->
+    <div class="background-shape shape-one"></div>
+    <div class="background-shape shape-two"></div>
+    <div class="background-shape shape-three"></div>
 
 
-    <!-- ========================= -->
-    <!-- DATASET COUNTER -->
-    <!-- ========================= -->
+    <main class="page">
 
-    <div class="stats">
-
-        <strong>
-            📊 Labelled examples:
-        </strong>
-
-        {{ dataset_count }}
-
-    </div>
+        <section class="lab-panel">
 
 
-    <!-- ========================= -->
-    <!-- BATCH INPUT -->
-    <!-- ========================= -->
+            <!-- =========================================
+                 HEADER
+            ========================================== -->
 
-    <form method="POST">
+            <header class="lab-header">
 
-        <textarea
-            name="comments"
-            rows="12"
-            placeholder="Enter one comment per line..."
-        ></textarea>
+                <div class="brand">
 
-        <br>
+                    <h1>PBL-3</h1>
 
-        <button
-            type="submit"
-            name="action"
-            value="analyze"
-        >
-            🔍 Analyze All
-        </button>
+                    <p>TRAINING LAB</p>
 
-    </form>
+                    <span class="tagline">
+                        LABEL. IMPROVE. RETRAIN.
+                    </span>
+
+                </div>
 
 
-    <!-- ========================= -->
-    <!-- RESULTS -->
-    <!-- ========================= -->
+                <div class="dataset-count">
 
-    {% if predictions %}
+                    <span>DATASET</span>
 
-        <form method="POST">
+                    <strong>
+                        {{ dataset_count }}
+                    </strong>
 
-            <div class="prediction">
+                    <small>
+                        labelled examples
+                    </small>
 
-                <h2>
-                    {{ predictions|length }}
-                    comments analyzed
-                </h2>
+                </div>
 
-
-                <button
-                    type="button"
-                    id="acceptAllButton"
-                >
-                    ✓ Accept All AI Suggestions
-                </button>
+            </header>
 
 
-                {% for item in predictions %}
 
-                    <div class="row">
+            <!-- =========================================
+                 FLASH MESSAGES
+            ========================================== -->
 
-                        <!-- COMMENT -->
+            {% with messages = get_flashed_messages() %}
 
-                        <div class="comment">
+                {% if messages %}
 
-                            {{ item.comment }}
+                    <div class="flash-container">
 
-                        </div>
+                        {% for message in messages %}
+
+                            <div class="message">
+
+                                {{ message }}
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
 
 
-                        <!-- TOXICITY -->
 
-                        <div class="model-result">
+            <!-- =========================================
+                 STEP 1 — UPLOAD IMAGE
+            ========================================== -->
 
-                            Model prediction:
+            <section class="top-grid">
 
-                            <strong>
-                                {{ item.label }}
-                            </strong>
+                <div class="lab-card">
 
-                        </div>
+                    <div class="card-title">
+                        <span>1.</span>
+                        UPLOAD SCREENSHOT
+                    </div>
 
-
-                        <div class="confidence">
-
-                            Confidence:
-                            {{ item.confidence }}%
-
-                        </div>
-
+                    <form
+                        method="POST"
+                        enctype="multipart/form-data"
+                    >
 
                         <input
                             type="hidden"
-                            name="comment"
-                            value="{{ item.comment }}"
+                            name="action"
+                            value="upload_image"
                         >
 
+                        <input
+                            type="file"
+                            name="image"
+                            accept=".jpg,.jpeg,.png"
+                            required
+                        >
 
-                        <!-- HUMAN TOXICITY LABEL -->
+                        <p class="helper-text">
+                            Upload a screenshot containing comments.
+                            OCR will extract the visible text.
+                        </p>
 
-                        <div class="label-section">
-
-                            <strong>
-                                Your Label:
-                            </strong>
-
-                            <br>
-
-                            <label>
-
-                                <input
-                                    type="radio"
-                                    class="toxic-radio"
-                                    name="toxic_label_{{ loop.index0 }}"
-                                    value="1"
-                                    required
-                                >
-
-                                Toxic
-
-                            </label>
-
-                            <br>
-
-                            <label>
-
-                                <input
-                                    type="radio"
-                                    class="non-toxic-radio"
-                                    name="toxic_label_{{ loop.index0 }}"
-                                    value="0"
-                                >
-
-                                Non-Toxic
-
-                            </label>
-
-
-                            <br>
+                        <div class="button-row">
 
                             <button
-                                type="button"
-                                class="ai-button accept-ai"
-                                data-index="{{ loop.index0 }}"
-                                data-prediction="{{ item.label }}"
+                                type="submit"
+                                class="black-button"
                             >
-                                ✓ Accept AI prediction
+                                UPLOAD &amp; EXTRACT
+                                <span>→</span>
                             </button>
 
                         </div>
 
-
-                        <!-- CATEGORY -->
-
-                        <div class="category-section">
-
-                            <strong>
-                                Category:
-                            </strong>
+                    </form>
 
 
-                            {% if item.category %}
+                    {% if uploaded_image %}
 
-                                <div class="suggestion">
+                        <div class="upload-status">
 
-                                    Suggested:
-                                    <strong>
-                                        {{ item.category }}
-                                    </strong>
+                            <span>UPLOADED</span>
 
-                                    (rule-based suggestion)
-
-                                </div>
-
-                            {% endif %}
-
-
-                            <br>
-
-                            <select
-                                name="category"
-                                class="category-select"
+                            <a
+                                href="{{ url_for('uploaded_file', filename=uploaded_image) }}"
+                                target="_blank"
                             >
-
-                                <option value="">
-                                    None
-                                </option>
-
-                                <option
-                                    value="abuse"
-                                    {% if item.category == "abuse" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Abuse
-                                </option>
-
-                                <option
-                                    value="harassment"
-                                    {% if item.category == "harassment" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Harassment
-                                </option>
-
-                                <option
-                                    value="threat"
-                                    {% if item.category == "threat" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Threat
-                                </option>
-
-                                <option
-                                    value="spam"
-                                    {% if item.category == "spam" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Spam
-                                </option>
-
-                            </select>
+                                View screenshot →
+                            </a>
 
                         </div>
 
-                    </div>
+                    {% endif %}
 
-                {% endfor %}
-
-            </div>
-
-
-            <!-- SAVE -->
-
-            <div class="actions">
-
-                <button
-                    type="submit"
-                    name="action"
-                    value="save"
-                >
-                    💾 SAVE ALL
-                </button>
-
-            </div>
-
-        </form>
-
-    {% endif %}
-
-
-    <!-- ========================= -->
-    <!-- RETRAIN -->
-    <!-- ========================= -->
-
-    <div class="actions">
-
-        <h2>
-            🧠 Model Training
-        </h2>
-
-        <p>
-            Save your labelled examples first,
-            then retrain the model.
-        </p>
-
-        <form method="POST">
-
-            <button
-                type="submit"
-                name="action"
-                value="retrain"
-            >
-                🧠 RETRAIN MODEL
-            </button>
-
-        </form>
-
-    </div>
-
-
-    <!-- ========================= -->
-    <!-- MESSAGES -->
-    <!-- ========================= -->
-
-    {% with messages = get_flashed_messages() %}
-
-        {% if messages %}
-
-            {% for message in messages %}
-
-                <div class="message">
-                    {{ message }}
                 </div>
 
-            {% endfor %}
-
-        {% endif %}
-
-    {% endwith %}
 
 
-    <!-- ========================= -->
-    <!-- JAVASCRIPT -->
-    <!-- ========================= -->
+                <!-- =====================================
+                     STEP 2 — OCR TEXT
+                ====================================== -->
 
-    <script>
+                <div class="lab-card">
 
-        // Accept AI toxicity prediction
+                    <div class="card-title">
+                        <span>2.</span>
+                        OCR TEXT
+                    </div>
 
-        document
-            .querySelectorAll(".accept-ai")
-            .forEach(button => {
+                    <form method="POST">
 
-                button.addEventListener(
-                    "click",
-                    function () {
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="extract_comments"
+                        >
 
-                        const index =
-                            this.dataset.index;
+                        <input
+                            type="hidden"
+                            name="uploaded_image"
+                            value="{{ uploaded_image or '' }}"
+                        >
 
-                        const prediction =
-                            this.dataset.prediction;
+                        <input
+                            type="hidden"
+                            name="source"
+                            value="{{ source or '' }}"
+                        >
+
+                        <textarea
+                            name="ocr_text"
+                            placeholder="Extracted text will appear here..."
+                        >{{ extracted_text or "" }}</textarea>
+
+                        <p class="helper-text">
+                            Correct OCR mistakes here before
+                            extracting individual comments.
+                        </p>
+
+                        <div class="button-row">
+
+                            <button
+                                type="submit"
+                                class="black-button"
+                            >
+                                EXTRACT COMMENTS
+                                <span>→</span>
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
 
 
-                        if (
-                            prediction === "Toxic"
-                        ) {
 
-                            document.querySelector(
-                                `input[name="toxic_label_${index}"][value="1"]`
-                            ).checked = true;
+            <!-- =========================================
+                 STEP 3 — EXTRACTED COMMENTS
+            ========================================== -->
 
-                        }
+            <section class="middle-grid">
 
-                        else {
+                <div class="lab-card extracted-card">
 
-                            document.querySelector(
-                                `input[name="toxic_label_${index}"][value="0"]`
-                            ).checked = true;
+                    <div class="card-title">
+                        <span>3.</span>
+                        EXTRACTED COMMENTS
+                    </div>
 
-                        }
-
-                    }
-                );
-
-            });
+                    <p class="helper-text">
+                        Review the detected comments. Edit or delete
+                        anything that was extracted incorrectly.
+                    </p>
 
 
-        // Accept all AI suggestions
+                    {% if extracted_comments %}
 
-        document
-            .getElementById("acceptAllButton")
-            .addEventListener(
-                "click",
-                function () {
+                        <form method="POST">
 
-                    document
-                        .querySelectorAll(".accept-ai")
-                        .forEach(button => {
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="analyze_extracted"
+                            >
 
-                            button.click();
+                            <input
+                                type="hidden"
+                                name="uploaded_image"
+                                value="{{ uploaded_image or '' }}"
+                            >
 
-                        });
+                            <input
+                                type="hidden"
+                                name="source"
+                                value="{{ source or 'screenshot' }}"
+                            >
 
-                }
-            );
 
-    </script>
+                            <div
+                                id="extracted-comments"
+                                class="comment-list"
+                            >
 
+                                {% for comment in extracted_comments %}
+
+                                    <div class="comment-row">
+
+                                        <span class="comment-number">
+                                            #{{ loop.index }}
+                                        </span>
+
+
+                                        <textarea
+                                            name="extracted_comment"
+                                            class="extracted-input"
+                                            rows="1"
+                                        >{{ comment }}</textarea>
+
+
+                                        <button
+                                            type="button"
+                                            class="delete-button"
+                                            aria-label="Delete comment"
+                                        >
+                                            ×
+                                        </button>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="button-row">
+
+                                <button
+                                    type="submit"
+                                    class="black-button"
+                                >
+                                    ANALYZE EXTRACTED
+                                    <span>→</span>
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    {% else %}
+
+                        <div class="empty-state">
+
+                            No comments extracted yet.
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                <!-- =====================================
+                     STEP 4 — MANUAL ANALYSIS
+                ====================================== -->
+
+                <div class="lab-card">
+
+                    <div class="card-title">
+                        <span>4.</span>
+                        MANUAL COMMENT ANALYSIS
+                    </div>
+
+                    <p class="helper-text">
+                        Enter one comment per line for quick testing.
+                    </p>
+
+                    <form method="POST">
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="analyze"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="source"
+                            value="manual"
+                        >
+
+                        <textarea
+                            name="comments"
+                            placeholder="Type comments here, one per line..."
+                        ></textarea>
+
+                        <div class="button-row">
+
+                            <button
+                                type="submit"
+                                class="black-button"
+                            >
+                                ANALYZE ALL
+                                <span>→</span>
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =========================================
+                 STEP 5 — PREDICTIONS
+            ========================================== -->
+
+            {% if predictions %}
+
+                <section class="lab-card predictions-card">
+
+                    <div class="card-title">
+                        <span>5.</span>
+                        PREDICTIONS &amp; LABELS
+                    </div>
+
+                    <p class="helper-text">
+                        Review the model prediction and provide
+                        your human-verified label.
+                    </p>
+
+
+                    <!-- ONE FORM FOR ALL PREDICTIONS -->
+
+                    <form method="POST">
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="save"
+                        >
+
+
+                        <div class="prediction-list">
+
+                            {% for prediction in predictions %}
+
+                                <article class="prediction-row">
+
+
+                                    <!-- COMMENT -->
+
+                                    <div class="prediction-comment">
+
+                                        <span class="mini-label">
+                                            COMMENT
+                                        </span>
+
+                                        <p>
+                                            {{ prediction.comment }}
+                                        </p>
+
+                                        <input
+                                            type="hidden"
+                                            name="comment"
+                                            value="{{ prediction.comment }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="source"
+                                            value="{{ prediction.source or source or 'manual' }}"
+                                        >
+
+                                    </div>
+
+
+
+                                    <!-- MODEL PREDICTION -->
+
+                                    <div class="prediction-model">
+
+                                        <span class="mini-label">
+                                            MODEL
+                                        </span>
+
+                                        <strong>
+                                            {{ prediction.label|upper }}
+                                        </strong>
+
+                                        <small>
+                                            Confidence:
+                                            {{ "%.2f"|format(prediction.confidence) }}%
+                                        </small>
+
+                                    </div>
+
+
+
+                                    <!-- HUMAN LABEL -->
+
+                                    <div class="prediction-label">
+
+                                        <span class="mini-label">
+                                            YOUR LABEL
+                                        </span>
+
+
+                                        <label class="radio-option">
+
+                                            <input
+                                                type="radio"
+                                                name="toxic_label_{{ loop.index0 }}"
+                                                value="1"
+                                                {% if prediction.label == "Toxic" %}
+                                                    checked
+                                                {% endif %}
+                                            >
+
+                                            <span>
+                                                Toxic
+                                            </span>
+
+                                        </label>
+
+
+                                        <label class="radio-option">
+
+                                            <input
+                                                type="radio"
+                                                name="toxic_label_{{ loop.index0 }}"
+                                                value="0"
+                                                {% if prediction.label == "Non-Toxic" %}
+                                                    checked
+                                                {% endif %}
+                                            >
+
+                                            <span>
+                                                Non-Toxic
+                                            </span>
+
+                                        </label>
+
+                                    </div>
+
+
+
+                                    <!-- CATEGORY -->
+
+                                    <div class="prediction-category">
+
+                                        <span class="mini-label">
+                                            CATEGORY
+                                        </span>
+
+                                        <select name="category">
+
+                                            <option value="">
+                                                None
+                                            </option>
+
+                                            <option
+                                                value="harassment"
+                                                {% if prediction.category == "harassment" %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Harassment
+                                            </option>
+
+                                            <option
+                                                value="abuse"
+                                                {% if prediction.category == "abuse" %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Abuse
+                                            </option>
+
+                                            <option
+                                                value="threat"
+                                                {% if prediction.category == "threat" %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Threat
+                                            </option>
+
+                                            <option
+                                                value="spam"
+                                                {% if prediction.category == "spam" %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Spam
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                </article>
+
+                            {% endfor %}
+
+                        </div>
+
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="prediction-actions">
+
+                            <button
+                                type="button"
+                                id="accept-all"
+                                class="outline-button"
+                            >
+                                ACCEPT ALL AI SUGGESTIONS
+                            </button>
+
+
+                            <button
+                                type="submit"
+                                class="black-button large-button"
+                            >
+                                SAVE LABELLED EXAMPLES
+                                <span>→</span>
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+            {% endif %}
+
+
+
+            <!-- =========================================
+                 STEP 6 + 7
+            ========================================== -->
+
+            <section class="bottom-grid">
+
+
+                <!-- SAVE INFO -->
+
+                <div class="lab-card action-card">
+
+                    <div>
+
+                        <div class="card-title">
+                            <span>6.</span>
+                            SAVE LABELLED EXAMPLES
+                        </div>
+
+                        <p class="helper-text">
+                            Human labels are stored in the
+                            training dataset.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- RETRAIN -->
+
+                <div class="lab-card action-card">
+
+                    <div>
+
+                        <div class="card-title">
+                            <span>7.</span>
+                            RETRAIN MODEL
+                        </div>
+
+                        <p class="helper-text">
+                            Retrain using the accumulated labelled data.
+                        </p>
+
+                    </div>
+
+
+                    <form method="POST">
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="retrain"
+                        >
+
+                        <button
+                            type="submit"
+                            class="black-button"
+                        >
+                            RETRAIN
+                            <span>→</span>
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =========================================
+                 FOOTER
+            ========================================== -->
+
+            <footer>
+
+                <span>
+                    PBL-3 · TRAINING LAB
+                </span>
+
+                <span>
+                    BETTER DATA. SAFER SPACES.
+                </span>
+
+            </footer>
+
+
+        </section>
+
+    </main>
 
 </body>
 

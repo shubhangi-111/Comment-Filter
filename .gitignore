@@ -2,3 +2,6 @@ data/
 *.csv
 venv/
 desktop.ini
+*.pyc
+uploads/
+__pycache__/

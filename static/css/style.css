@@ -1,0 +1,389 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: #f7f5ef;
+    color: #000;
+    overflow-x: hidden;
+}
+
+
+/* =========================
+   BACKGROUND
+   ========================= */
+
+.background-shape {
+    position: fixed;
+    background: #ffdf00;
+    z-index: -2;
+}
+
+.shape-one {
+    width: 62vw;
+    height: 85vh;
+    top: 0;
+    left: 0;
+}
+
+.shape-two {
+    width: 34vw;
+    height: 48vh;
+    right: 0;
+    bottom: 0;
+}
+
+.shape-three {
+    width: 28vw;
+    height: 32vh;
+    left: 22vw;
+    bottom: 0;
+}
+
+
+/* =========================
+   PAGE
+   ========================= */
+
+.page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 60px 6vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================
+   MAIN PANEL
+   ========================= */
+
+.app-panel {
+    width: min(1100px, 100%);
+    min-height: 680px;
+
+    background: #ffdf00;
+
+    border: 5px solid #000;
+    border-radius: 14px;
+
+    padding: 42px;
+
+    position: relative;
+}
+
+
+/* =========================
+   BRAND
+   ========================= */
+
+.brand {
+    margin-bottom: 52px;
+}
+
+.brand h1 {
+    font-size: clamp(5rem, 12vw, 9.5rem);
+    line-height: 0.75;
+    font-weight: 900;
+    letter-spacing: -0.09em;
+}
+
+.brand p {
+    margin-top: 18px;
+
+    font-size: clamp(1.3rem, 2.4vw, 2rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+}
+
+
+/* =========================
+   SECTIONS
+   ========================= */
+
+.analyzer,
+.result-section {
+    width: 100%;
+}
+
+.section-label {
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
+
+
+/* =========================
+   TEXT INPUT
+   ========================= */
+
+textarea {
+    width: 100%;
+    min-height: 155px;
+
+    resize: vertical;
+
+    background: #f7f5ef;
+    color: #000;
+
+    border: 4px solid #000;
+    border-radius: 12px;
+
+    padding: 22px;
+
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    outline: none;
+
+    transition:
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+textarea::placeholder {
+    color: #555;
+}
+
+textarea:focus {
+    box-shadow: 6px 6px 0 #000;
+    transform: translate(-2px, -2px);
+}
+
+
+/* =========================
+   BUTTON
+   ========================= */
+
+.action-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.analyze-button {
+    border: 4px solid #000;
+    border-radius: 10px;
+
+    background: #000;
+    color: #fff;
+
+    padding: 15px 24px;
+
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.analyze-button span {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.analyze-button:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 5px 5px 0 #000;
+}
+
+.analyze-button:active {
+    transform: translate(0, 0);
+    box-shadow: none;
+}
+
+
+/* =========================
+   RESULT
+   ========================= */
+
+.result-section {
+    margin-top: 46px;
+}
+
+.result-card {
+    border: 4px solid #000;
+    border-radius: 12px;
+
+    padding: 25px;
+
+    background: #f7f5ef;
+}
+
+.result-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.result-status {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.warning-icon,
+.safe-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 4px solid #000;
+    border-radius: 50%;
+
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.result-label {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.06em;
+}
+
+.confidence {
+    font-family: "Courier New", monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+/* =========================
+   CONFIDENCE BAR
+   ========================= */
+
+.confidence-track {
+    width: 100%;
+    height: 12px;
+
+    margin-top: 25px;
+
+    background: #ddd;
+    border: 3px solid #000;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: #000;
+}
+
+
+/* =========================
+   DISCLAIMER
+   ========================= */
+
+.disclaimer {
+    margin-top: 18px;
+
+    font-family: "Courier New", monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+
+/* =========================
+   TOXIC / SAFE
+   ========================= */
+
+.result-card.toxic {
+    background: #f7f5ef;
+}
+
+.result-card.safe {
+    background: #f7f5ef;
+}
+
+
+/* =========================
+   FOOTER
+   ========================= */
+
+footer {
+    margin-top: 38px;
+
+    font-family: "Courier New", monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    opacity: 0.7;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 700px) {
+
+    .page {
+        padding: 25px 15px;
+    }
+
+    .app-panel {
+        padding: 28px 22px;
+        min-height: auto;
+    }
+
+    .brand {
+        margin-bottom: 38px;
+    }
+
+    .brand h1 {
+        font-size: 5rem;
+    }
+
+    .result-main {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .confidence {
+        white-space: normal;
+    }
+
+    .action-row {
+        justify-content: stretch;
+    }
+
+    .analyze-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .shape-one {
+        width: 90vw;
+    }
+
+    .shape-two {
+        width: 60vw;
+    }
+
+    .shape-three {
+        display: none;
+    }
+}
