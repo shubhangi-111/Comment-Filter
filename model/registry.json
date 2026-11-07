@@ -1,0 +1,21 @@
+{
+    "active_version": "legacy",
+    "versions": [
+        {
+            "version": "v_20261108_010448_363236",
+            "status": "candidate",
+            "created_at": "2026-11-08T01:04:48.386486+05:30",
+            "metrics": {
+                "accuracy": 0.8641481110833125,
+                "toxic_precision": 0.28390596745027125,
+                "toxic_recall": 0.5164473684210527,
+                "toxic_f1": 0.3663943990665111
+            },
+            "paths": {
+                "model": "versions/v_20261108_010448_363236/model.pkl",
+                "vectorizer": "versions/v_20261108_010448_363236/vectorizer.pkl",
+                "metadata": "versions/v_20261108_010448_363236/metadata.json"
+            }
+        }
+    ]
+}

@@ -1,0 +1,64 @@
+{
+    "version": "v_20261108_010448_363236",
+    "created_at": "2026-11-08T01:04:48.386486+05:30",
+    "status": "candidate",
+    "model": {
+        "algorithm": "LogisticRegression",
+        "max_iter": 1000,
+        "class_weight": "balanced",
+        "random_state": 42
+    },
+    "vectorizer": {
+        "algorithm": "TfidfVectorizer",
+        "max_features": 5000,
+        "vocabulary_size": 5000
+    },
+    "dataset": {
+        "jigsaw_sampled": 20000,
+        "jigsaw_training": 15986,
+        "jigsaw_testing": 3997,
+        "manual_examples_added": 6,
+        "total_training_examples": 15992
+    },
+    "evaluation": {
+        "test_dataset": "Jigsaw holdout",
+        "accuracy": 0.8641481110833125,
+        "confusion_matrix": [
+            [
+                3297,
+                396
+            ],
+            [
+                147,
+                157
+            ]
+        ],
+        "classification_report": {
+            "Non-Toxic": {
+                "precision": 0.9573170731707317,
+                "recall": 0.892770105605199,
+                "f1-score": 0.9239176124422026,
+                "support": 3693.0
+            },
+            "Toxic": {
+                "precision": 0.28390596745027125,
+                "recall": 0.5164473684210527,
+                "f1-score": 0.3663943990665111,
+                "support": 304.0
+            },
+            "accuracy": 0.8641481110833125,
+            "macro avg": {
+                "precision": 0.6206115203105015,
+                "recall": 0.7046087370131258,
+                "f1-score": 0.6451560057543568,
+                "support": 3997.0
+            },
+            "weighted avg": {
+                "precision": 0.9060994158930183,
+                "recall": 0.8641481110833125,
+                "f1-score": 0.8815140455504812,
+                "support": 3997.0
+            }
+        }
+    }
+}

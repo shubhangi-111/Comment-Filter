@@ -1,0 +1,59 @@
+{
+    "evaluated_at": "2026-11-08T01:22:49.038735+05:30",
+    "evaluation_dataset": "Jigsaw holdout",
+    "evaluation_examples": 3997,
+    "active_version": "legacy",
+    "ranking_metric": "toxic_f1",
+    "results": [
+        {
+            "version": "legacy",
+            "status": "active",
+            "comparison_warning": "Potential evaluation leakage: legacy training may have included examples from this test split.",
+            "metrics": {
+                "accuracy": 0.8641481110833125,
+                "toxic_precision": 0.28390596745027125,
+                "toxic_recall": 0.5164473684210527,
+                "toxic_f1": 0.3663943990665111,
+                "confusion_matrix": [
+                    [
+                        3297,
+                        396
+                    ],
+                    [
+                        147,
+                        157
+                    ]
+                ],
+                "true_negatives": 3297,
+                "false_positives": 396,
+                "false_negatives": 147,
+                "true_positives": 157
+            }
+        },
+        {
+            "version": "v_20261108_010448_363236",
+            "status": "candidate",
+            "comparison_warning": null,
+            "metrics": {
+                "accuracy": 0.8641481110833125,
+                "toxic_precision": 0.28390596745027125,
+                "toxic_recall": 0.5164473684210527,
+                "toxic_f1": 0.3663943990665111,
+                "confusion_matrix": [
+                    [
+                        3297,
+                        396
+                    ],
+                    [
+                        147,
+                        157
+                    ]
+                ],
+                "true_negatives": 3297,
+                "false_positives": 396,
+                "false_negatives": 147,
+                "true_positives": 157
+            }
+        }
+    ]
+}
