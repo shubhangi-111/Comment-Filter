@@ -67,6 +67,152 @@
             </header>
 
 
+            <!-- =========================================
+                 STEP 8 — MODEL CONTROL PANEL
+            ========================================== -->
+
+            <section class="lab-card model-dashboard" aria-labelledby="model-dashboard-title">
+
+                <div class="dashboard-heading">
+                    <div>
+                        <div class="card-title" id="model-dashboard-title">
+                            <span>8.</span>
+                            MODEL CONTROL PANEL
+                        </div>
+                        <p class="helper-text">
+                            Review the active model, compare registered candidates,
+                            and manage model promotion or rollback.
+                        </p>
+                    </div>
+                    <span class="dashboard-live-label">MODEL REGISTRY</span>
+                </div>
+
+                <div class="active-model-card">
+                    <div class="active-model-heading">
+                        <div>
+                            <span class="mini-label">CURRENTLY ACTIVE</span>
+                            <h2>{{ model_dashboard.active.version }}</h2>
+                        </div>
+                        <span class="model-status status-active">ACTIVE</span>
+                    </div>
+
+                    <div class="model-metrics">
+                        <div class="metric">
+                            <span>ACCURACY</span>
+                            <strong>{{ model_dashboard.active.accuracy }}</strong>
+                        </div>
+                        <div class="metric">
+                            <span>TOXIC PRECISION</span>
+                            <strong>{{ model_dashboard.active.precision }}</strong>
+                        </div>
+                        <div class="metric">
+                            <span>TOXIC RECALL</span>
+                            <strong>{{ model_dashboard.active.recall }}</strong>
+                        </div>
+                        <div class="metric">
+                            <span>TOXIC F1</span>
+                            <strong>{{ model_dashboard.active.f1 }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="candidate-heading">
+                    <div>
+                        <h3>REGISTERED CANDIDATES</h3>
+                        <p class="helper-text">
+                            Promotion is checked by the model-management safeguards.
+                            A candidate is not made active just because it appears here.
+                        </p>
+                    </div>
+                    <span class="candidate-count">
+                        {{ model_dashboard.candidates|length }} CANDIDATE(S)
+                    </span>
+                </div>
+
+                {% if model_dashboard.candidates %}
+                    <div class="candidate-list">
+                        {% for candidate in model_dashboard.candidates %}
+                            <article class="candidate-card">
+                                <div class="candidate-topline">
+                                    <div>
+                                        <span class="mini-label">MODEL VERSION</span>
+                                        <h3>{{ candidate.version }}</h3>
+                                    </div>
+                                    <span class="model-status status-{{ candidate.status|lower }}">
+                                        {{ candidate.status|upper }}
+                                    </span>
+                                </div>
+
+                                <div class="model-metrics candidate-metrics">
+                                    <div class="metric">
+                                        <span>ACCURACY</span>
+                                        <strong>{{ candidate.accuracy }}</strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span>TOXIC PRECISION</span>
+                                        <strong>{{ candidate.precision }}</strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span>TOXIC RECALL</span>
+                                        <strong>{{ candidate.recall }}</strong>
+                                    </div>
+                                    <div class="metric">
+                                        <span>TOXIC F1</span>
+                                        <strong>{{ candidate.f1 }}</strong>
+                                    </div>
+                                </div>
+
+                                <form method="POST" class="model-action-form"
+                                      onsubmit="return confirm('Attempt to promote this candidate? The model-management safeguards will validate it before activation.');">
+                                    <input type="hidden" name="action" value="promote">
+                                    <input type="hidden" name="version" value="{{ candidate.version }}">
+                                    <button type="submit" class="black-button">
+                                        PROMOTE CANDIDATE
+                                        <span>→</span>
+                                    </button>
+                                </form>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state candidate-empty">
+                        No candidate versions are currently registered.
+                        Retrain the model to create a new candidate for evaluation.
+                    </div>
+                {% endif %}
+
+                <div class="rollback-row">
+                    <div>
+                        <h3>ROLLBACK</h3>
+                        <p class="helper-text">
+                            Restore the previously active model version if one is recorded.
+                            The model-management command validates the rollback.
+                        </p>
+                    </div>
+
+                    {% if model_dashboard.has_previous_version %}
+                        <form method="POST"
+                              onsubmit="return confirm('Roll back to the previously active model version?');">
+                            <input type="hidden" name="action" value="rollback">
+                            <button type="submit" class="outline-button rollback-button">
+                                ROLLBACK MODEL
+                            </button>
+                        </form>
+                    {% else %}
+                        <button type="button" class="outline-button rollback-button" disabled>
+                            NO PREVIOUS VERSION
+                        </button>
+                    {% endif %}
+                </div>
+
+                <p class="dashboard-footnote">
+                    After a successful promotion or rollback, restart both Flask applications
+                    so they load the newly active model.
+                </p>
+
+            </section>
+
+
 
             <!-- =========================================
                  FLASH MESSAGES
@@ -447,7 +593,7 @@
                                         <input
                                             type="hidden"
                                             name="source"
-                                            value="{{ prediction.source or source or 'manual' }}"
+                                            value="{{ source or 'manual' }}"
                                         >
 
                                     </div>

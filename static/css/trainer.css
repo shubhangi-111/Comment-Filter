@@ -836,3 +836,219 @@ footer {
         display: none;
     }
 }
+
+/* =========================
+   MODEL CONTROL PANEL
+========================= */
+
+.model-dashboard {
+    margin-top: 14px;
+    background: #16e6e6;
+}
+
+.dashboard-heading,
+.candidate-heading,
+.rollback-row,
+.active-model-heading,
+.candidate-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.dashboard-live-label,
+.candidate-count {
+    flex: 0 0 auto;
+    border: 2px solid #000;
+    background: #f7f5ef;
+    padding: 7px 10px;
+    font-family: "Courier New", monospace;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.active-model-card,
+.candidate-card {
+    border: 3px solid #000;
+    border-radius: 9px;
+    background: #f7f5ef;
+    padding: 17px;
+    margin-top: 15px;
+}
+
+.active-model-heading h2,
+.candidate-topline h3 {
+    margin-top: 3px;
+    font-size: 1.15rem;
+    font-weight: 950;
+    overflow-wrap: anywhere;
+}
+
+.model-status {
+    display: inline-block;
+    border: 2px solid #000;
+    border-radius: 5px;
+    padding: 6px 9px;
+    font-family: "Courier New", monospace;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    background: #fff;
+}
+
+.status-active {
+    background: #b9f7c8;
+}
+
+.status-candidate,
+.status-inactive {
+    background: #fff0a8;
+}
+
+.status-rejected {
+    background: #ffb7b7;
+}
+
+.model-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.metric {
+    min-width: 0;
+    border: 2px solid #000;
+    border-radius: 6px;
+    padding: 10px;
+    background: #fff;
+}
+
+.metric span {
+    display: block;
+    font-family: "Courier New", monospace;
+    font-size: 0.57rem;
+    font-weight: 900;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.metric strong {
+    display: block;
+    margin-top: 6px;
+    font-family: "Courier New", monospace;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+}
+
+.candidate-heading {
+    align-items: center;
+    margin-top: 24px;
+}
+
+.candidate-heading h3,
+.rollback-row h3 {
+    font-size: 0.9rem;
+    font-weight: 950;
+    letter-spacing: 0.02em;
+}
+
+.candidate-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.candidate-card {
+    margin-top: 0;
+}
+
+.candidate-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.model-action-form {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+.model-action-form .black-button {
+    width: 100%;
+}
+
+.candidate-empty {
+    background: #f7f5ef;
+}
+
+.rollback-row {
+    align-items: center;
+    border-top: 2px solid #000;
+    margin-top: 22px;
+    padding-top: 17px;
+}
+
+.rollback-row > div {
+    min-width: 0;
+}
+
+.rollback-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.dashboard-footnote {
+    margin-top: 13px;
+    font-family: "Courier New", monospace;
+    font-size: 0.65rem;
+    line-height: 1.5;
+    font-weight: 700;
+}
+
+/* =========================
+   RESPONSIVE MODEL DASHBOARD
+========================= */
+
+@media (max-width: 760px) {
+    .dashboard-heading,
+    .candidate-heading,
+    .rollback-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-live-label,
+    .candidate-count {
+        align-self: flex-start;
+    }
+
+    .candidate-list {
+        grid-template-columns: 1fr;
+    }
+
+    .model-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rollback-row form,
+    .rollback-row button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .model-metrics,
+    .candidate-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .active-model-card,
+    .candidate-card {
+        padding: 12px;
+    }
+}

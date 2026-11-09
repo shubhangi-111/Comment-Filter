@@ -17,6 +17,7 @@ import subprocess
 import sys
 import re
 import uuid
+import json
 
 import pytesseract
 from PIL import Image
@@ -77,6 +78,252 @@ def get_dataset_count():
     except Exception:
 
         return 0
+
+
+# ============================================================
+# MODEL VERSION DASHBOARD
+# ============================================================
+
+REGISTRY_FILE = Path("model/registry.json")
+LATEST_EVALUATION_FILE = Path(
+    "model/evaluations/latest_comparison.json"
+)
+
+
+def _read_json_file(filepath):
+
+    if not filepath.exists():
+        return {}
+
+    try:
+
+        with filepath.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        return data if isinstance(data, dict) else {}
+
+    except (OSError, json.JSONDecodeError):
+
+        return {}
+
+
+def _metric_value(metrics, *keys):
+
+    if not isinstance(metrics, dict):
+        return None
+
+    for key in keys:
+
+        value = metrics.get(key)
+
+        if value is not None:
+
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return value
+
+    return None
+
+
+def _format_metric(value):
+
+    if value is None:
+        return "—"
+
+    try:
+
+        number = float(value)
+
+        if number <= 1:
+            return f"{number * 100:.2f}%"
+
+        return f"{number:.2f}%"
+
+    except (TypeError, ValueError):
+
+        return str(value)
+
+
+def get_model_dashboard():
+
+    registry = _read_json_file(REGISTRY_FILE)
+    evaluation = _read_json_file(LATEST_EVALUATION_FILE)
+
+    active_version = registry.get("active_version", "legacy")
+    versions = registry.get("versions", {})
+
+    if not isinstance(versions, dict):
+        versions = {}
+
+    active_metadata = versions.get(active_version, {})
+
+    if not isinstance(active_metadata, dict):
+        active_metadata = {}
+
+    active_metrics = active_metadata.get("metrics", {})
+
+    if not isinstance(active_metrics, dict):
+        active_metrics = {}
+
+    comparison_rows = (
+        evaluation.get("results")
+        or evaluation.get("models")
+        or evaluation.get("comparisons")
+        or []
+    )
+
+    if isinstance(comparison_rows, dict):
+
+        comparison_rows = [
+            {"version": key, **value}
+            for key, value in comparison_rows.items()
+            if isinstance(value, dict)
+        ]
+
+    if not isinstance(comparison_rows, list):
+        comparison_rows = []
+
+    evaluation_by_version = {}
+
+    for row in comparison_rows:
+
+        if not isinstance(row, dict):
+            continue
+
+        version = (
+            row.get("version")
+            or row.get("model_version")
+            or row.get("name")
+        )
+
+        if version:
+            evaluation_by_version[str(version)] = row
+
+    active_evaluation = evaluation_by_version.get(
+        str(active_version), {}
+    )
+
+    if not active_metrics and isinstance(active_evaluation, dict):
+
+        active_metrics = active_evaluation.get(
+            "metrics", active_evaluation
+        )
+
+    active = {
+        "version": active_version,
+        "status": "active",
+        "accuracy": _format_metric(
+            _metric_value(active_metrics, "accuracy")
+        ),
+        "precision": _format_metric(
+            _metric_value(
+                active_metrics, "toxic_precision", "precision"
+            )
+        ),
+        "recall": _format_metric(
+            _metric_value(
+                active_metrics, "toxic_recall", "recall"
+            )
+        ),
+        "f1": _format_metric(
+            _metric_value(
+                active_metrics, "toxic_f1", "f1", "f1_score"
+            )
+        )
+    }
+
+    candidates = []
+
+    for version, metadata in versions.items():
+
+        if version == active_version:
+            continue
+
+        if not isinstance(metadata, dict):
+            continue
+
+        status = str(
+            metadata.get("status", "candidate")
+        ).lower()
+
+        if status not in {"candidate", "rejected", "inactive"}:
+            continue
+
+        metrics = metadata.get("metrics", {})
+
+        if not isinstance(metrics, dict):
+            metrics = {}
+
+        evaluation_row = evaluation_by_version.get(
+            str(version), {}
+        )
+
+        if not metrics and isinstance(evaluation_row, dict):
+
+            metrics = evaluation_row.get(
+                "metrics", evaluation_row
+            )
+
+        candidates.append({
+            "version": version,
+            "status": status,
+            "accuracy": _format_metric(
+                _metric_value(metrics, "accuracy")
+            ),
+            "precision": _format_metric(
+                _metric_value(
+                    metrics, "toxic_precision", "precision"
+                )
+            ),
+            "recall": _format_metric(
+                _metric_value(
+                    metrics, "toxic_recall", "recall"
+                )
+            ),
+            "f1": _format_metric(
+                _metric_value(
+                    metrics, "toxic_f1", "f1", "f1_score"
+                )
+            )
+        })
+
+    candidates.reverse()
+
+    return {
+        "active": active,
+        "candidates": candidates,
+        "has_previous_version": bool(
+            registry.get("previous_active_version")
+        )
+    }
+
+
+@app.context_processor
+def inject_model_dashboard():
+
+    return {
+        "model_dashboard": get_model_dashboard()
+    }
+
+
+def run_model_management_command(command, version=None):
+
+    command_args = [
+        sys.executable,
+        "-m",
+        "model.manage_models",
+        command
+    ]
+
+    if version:
+        command_args.append(version)
+
+    return subprocess.run(
+        command_args,
+        capture_output=True,
+        text=True
+    )
 
 
 # ============================================================
@@ -1315,6 +1562,84 @@ def trainer():
         return redirect(
             url_for("trainer")
         )
+
+
+    # ========================================================
+    # PROMOTE CANDIDATE MODEL
+    # ========================================================
+
+    elif action == "promote":
+
+        version = request.form.get(
+            "version", ""
+        ).strip()
+
+        if not version:
+
+            flash("Please select a candidate model version.")
+
+            return redirect(url_for("trainer"))
+
+        result = run_model_management_command(
+            "promote", version
+        )
+
+        output = (
+            result.stdout.strip()
+            or result.stderr.strip()
+            or "No command output was returned."
+        )
+
+        if result.returncode == 0:
+
+            flash(
+                "✓ Model promotion completed.\n\n"
+                + output
+                + "\n\nRestart both Flask applications "
+                "to load the newly active model."
+            )
+
+        else:
+
+            flash(
+                "❌ Model promotion was not completed.\n\n"
+                + output
+            )
+
+        return redirect(url_for("trainer"))
+
+
+    # ========================================================
+    # ROLLBACK ACTIVE MODEL
+    # ========================================================
+
+    elif action == "rollback":
+
+        result = run_model_management_command("rollback")
+
+        output = (
+            result.stdout.strip()
+            or result.stderr.strip()
+            or "No command output was returned."
+        )
+
+        if result.returncode == 0:
+
+            flash(
+                "✓ Model rollback completed.\n\n"
+                + output
+                + "\n\nRestart both Flask applications "
+                "to load the restored model."
+            )
+
+        else:
+
+            flash(
+                "❌ Model rollback was not completed.\n\n"
+                + output
+            )
+
+        return redirect(url_for("trainer"))
 
 
     # ========================================================
